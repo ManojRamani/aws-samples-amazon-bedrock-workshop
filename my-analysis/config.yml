@@ -9,7 +9,7 @@ model:
 # Inference configuration
 inference_config:
   temperature: 0.2
-  max_tokens: 6000
+  max_tokens: 30000  # Increased from 15000 to 30000 to allow for much more detailed responses
 
 # List of folders to analyze
 folders_to_analyze:
@@ -33,14 +33,24 @@ debug:
 
 # File selection configuration
 file_selection:
-  max_notebooks: 150        # Increased from 50 to 150 (3x)
-  max_notebook_cells: 300   # Increased from 100 to 300 (3x)
-  max_python_files: 300     # Increased from 100 to 300 (3x)
-  max_python_lines: 3000    # Increased from 1000 to 3000 (3x)
-  max_markdown_files: 150   # Increased from 50 to 150 (3x)
+  max_notebooks: 1000       # Set to very high value to consume entire files
+  max_notebook_cells: 10000 # Set to very high value to consume entire files
+  max_python_files: 1000    # Set to very high value to consume entire files
+  max_python_lines: 100000  # Set to very high value to consume entire files
+  max_markdown_files: 1000  # Set to very high value to consume entire files
+  max_yaml_files: 1000      # Set to very high value to consume entire files
+  max_yaml_lines: 100000    # Set to very high value to consume entire files
+  max_terraform_files: 1000 # Set to very high value to consume entire files
+  max_terraform_lines: 100000 # Set to very high value to consume entire files
+  max_shell_files: 1000     # Set to very high value to consume entire files
+  max_shell_lines: 100000   # Set to very high value to consume entire files
+  max_text_files: 1000      # Set to very high value to consume entire files
+  max_text_lines: 100000    # Set to very high value to consume entire files
   include_patterns:         # Always include files matching these patterns
     - "main.py"
     - "*config*.py"
+    - "*config*.yml"
+    - "*config*.yaml"
     - "README*"
     - "utils.py"
     - "*agent*.py"
@@ -52,6 +62,14 @@ file_selection:
     - "*client*.py"
     - "*api*.py"
     - "requirements.txt"
+    - "Chart.yaml"
+    - "values.yaml"
+    - "deployment.yaml"
+    - "service.yaml"
+    - "ingress.yaml"
+    - "*.tf"              # Include all Terraform files
+    - "*.sh"              # Include all shell scripts
+    - "*.txt"             # Include all text files
   exclude_patterns:         # Skip files/directories matching these patterns
     - "__pycache__"
     - "*.pyc"
