@@ -22,10 +22,12 @@ Create a well-structured file named [report-file-name].md with the following sec
 ### Visual Documentation
 Include Mermaid diagrams where they add value:
 - Flowcharts for program logic
-- Sequence diagrams for user journeys
+- Sequence diagrams for user journeys (IMPORTANT: For any API interactions or request/response flows, include a sequence diagram showing the step-by-step process)
 - Architecture diagrams for system design
 - Class diagrams for object relationships
 - Choose the most appropriate diagram type for each context
+
+IMPORTANT: For modules involving APIs, always include at least one sequence diagram showing the request/response flow between components.
 
 ### Additional Requirements
 - Use clear, jargon-free explanations suitable for intermediate developers

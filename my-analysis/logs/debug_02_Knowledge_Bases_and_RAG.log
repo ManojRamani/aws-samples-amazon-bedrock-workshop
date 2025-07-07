@@ -1,0 +1,1434 @@
+# Debug Log for 02_Knowledge_Bases_and_RAG
+# Generated on: 2025-07-06 at 17:41:15
+# Prompt length: 56362 characters
+# Estimated token count: ~14090 tokens
+
+# FULL PROMPT:
+
+# Amazon Bedrock Workshop Module Analysis Prompt
+
+You are an expert technical tutor who specializes in breaking down complex implementation details into easily understandable explanations.
+
+## Task
+Analyze and document the codebase in the folder 02_Knowledge_Bases_and_RAG and create a comprehensive summary.
+
+## Deliverables
+
+### Code Analysis
+- Thoroughly examine the implementation details, architecture patterns, and key components
+
+### Summary Document
+Create a well-structured file named SUMMARY-02_Knowledge_Bases_and_RAG.md.md with the following sections:
+
+1. **Executive summary** (high-level overview)
+2. **Implementation details breakdown**
+3. **Key takeaways and lessons learned**
+4. **Technical architecture overview**
+5. **Recommendations or next steps** (if applicable)
+
+### Visual Documentation
+Include Mermaid diagrams where they add value:
+- Flowcharts for program logic
+- Sequence diagrams for user journeys (IMPORTANT: For any API interactions or request/response flows, include a sequence diagram showing the step-by-step process)
+- Architecture diagrams for system design
+- Class diagrams for object relationships
+- Choose the most appropriate diagram type for each context
+
+IMPORTANT: For modules involving APIs, always include at least one sequence diagram showing the request/response flow between components.
+
+### Additional Requirements
+- Use clear, jargon-free explanations suitable for intermediate developers
+- Provide code snippets with explanations where helpful
+- Highlight potential issues, optimizations, or best practices
+- Access the latest documentation using Context7 MCP when available
+
+## Output Format
+Markdown with proper headings, code blocks, and embedded Mermaid diagrams
+Place the generated report in my-analysis/SUMMARY-02_Knowledge_Bases_and_RAG.md.md
+
+
+IMPORTANT: Start your response directly with the title '# SUMMARY-02_Knowledge_Bases_and_RAG.md' (not abbreviated). Do not include any introductory text, preamble, or markdown tags before the title. Begin with the exact title and proceed with the analysis.
+
+# Folder Content to Analyze
+
+# Folder Content Summary for 02_Knowledge_Bases_and_RAG
+
+## README Content
+
+# Amazon Bedrock Workshop - Module 2 - Knowledge Bases and RAG
+
+This workshop module provides an introductory demostration of Amazon Bedrock Knowledge Bases capabilities.
+
+Please go through the module by executing the notebook labs in their naming order.
+
+## Contributing
+
+We welcome community contributions! Please ensure your sample aligns with [AWS best practices](https://aws.amazon.com/architecture/well-architected/), and please update the **Contents** section of this README file with a link to your sample, along with a description.
+
+## File Statistics
+
+Total files found: 11
+Notebooks: 4
+Python files: 1
+Markdown files: 1
+Other files: 5
+
+Important files selected based on patterns: 3
+
+## Files in the folder
+
+### Notebooks
+- 1_create-kb-and-ingest-documents.ipynb
+- 2_managed-rag-with-retrieve-and-generate-api.ipynb
+- 3_customized-rag-with-retrieve-api.ipynb
+- 4_clean-up.ipynb
+
+### Python Files
+- utility.py
+
+### Markdown Files
+
+### Other Files
+- requirements.txt
+
+## Content of Key Files
+
+### 1_create-kb-and-ingest-documents.ipynb
+
+# Module 2 - Create Knowledge Base and Ingest Documents
+
+----
+
+This notebook provides sample code with step by step instructions for setting up an Amazon Bedrock Knowledge Base.
+
+----
+
+### Contents
+
+1. *Setup*
+1. *Create an S3 Data Source*
+1. *Setup AOSS Vector Index and Configure BKB Access Permissions*
+2. *Configure Amazon Bedrock Knowledge Base and Synchronize it with Data Source*
+3. *Conclusions and Next Steps*
+
+----
+
+### Introduction
+
+Foundation models (FMs) are powerful AI models trained on vast amounts of general-purpose data. However, many real-world applications require these models to generate responses grounded in domain-specific or proprietary information. Retrieval Augmented Generation (RAG) is a technique that enhances generative AI responses by retrieving relevant information from external data sources at query time.
+
+Amazon Bedrock Knowledge Bases (BKBs) provide a fully managed capability to implement RAG-based solutions. By integrating your own data — such as documents, manuals, and other domain-specific sources of information — into a knowledge base, you can improve the accuracy, relevance, and usefulness of model-generated responses. When a user submits a query, Amazon Bedrock Knowledge Bases search across the available data sources, retrieve the most relevant content, and pass this information to the foundation model to generate a more informed response.
+
+![BKB illustration](./images/bkb_illustration.png)
+
+This notebook demonstrates how to create an empty Amazon OpenSearch Serverless (AOSS) index, build an Amazon Bedrock Knowledge Base, and ingest documents into it for retrieval-augmented generation.
+
+### Pre-requisites
+
+Please make sure that you have enabled the following model access in _Amazon Bedrock Console_:
+- `Amazon Titan Text Embeddings V2`.
+
+**If you are running AWS-facilitated event**, all other pre-requisites are satisfied and you can go to the next section.
+
+**If you are running this notebook as a self-paced lab**, then please note that this notebook requires permissions to:
+- create and delete *Amazon IAM* roles
+- create, update and delete *Amazon S3* buckets
+- access to *Amazon Bedrock*
+- access to *Amazon OpenSearch Serverless*
+
+In particular, if running on *SageMaker Studio*, you should add the following managed policies to your SageMaker execution role:
+- `IAMFullAccess`,
+- `AWSLambda_FullAccess`,
+- `AmazonS3FullAccess`,
+- `AmazonBedrockFullAccess`,
+- Custom policy for Amazon OpenSearch Serverless such as:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "aoss:*",
+            "Resource": "*"
+        }
+    ]
+}
+````
+
+----
+
+## 1. Setup
+
+### 1.1 Install and import the required libraries
+
+
+```python
+%pip install --force-reinstall -q -r ./requirements.txt
+```
+
+```python
+# Restart kernel
+from IPython.core.display import HTML
+HTML("<script>Jupyter.notebook.kernel.restart()</script>")
+```
+
+```python
+# Standard library imports
+import os
+import sys
+import json
+import time
+import random
+
+# Third-party imports
+import boto3
+from botocore.exceptions import ClientError
+
+# Local imports
+import utility
+
+# Print SDK versions
+print(f"Python version: {sys.version.split()[0]}")
+print(f"Boto3 SDK version: {boto3.__version__}")
+```
+
+### 1.2 Initial setup for clients and global variables
+
+```python
+# Create boto3 session and set AWS region
+boto_session = boto3.Session()
+aws_region = boto_session.region_name
+
+# Create boto3 clients for AOSS, Bedrock, and S3 services
+aoss_client = boto3.client('opensearchserverless')
+bedrock_agent_client = boto3.client('bedrock-agent')
+s3_client = boto3.client('s3')
+
+# Define names for AOSS, Bedrock, and S3 resources
+resource_suffix = random.randrange(100, 999)
+s3_bucket_name = f"bedrock-kb-{aws_region}-{resource_suffix}"
+aoss_collection_name = f"bedrock-kb-collection-{resource_suffix}"
+aoss_index_name = f"bedrock-kb-index-{resource_suffix}"
+bedrock_kb_name = f"bedrock-kb-{resource_suffix}"
+
+# Set the Bedrock model to use for embedding generation
+embedding_model_id = 'amazon.titan-embed-text-v2:0'
+embedding_model_arn = f'arn:aws:bedrock:{aws_region}::foundation-model/{embedding_model_id}'
+embedding_model_dim = 1024
+
+# Some temporary local paths
+local_data_dir = 'data'
+
+# Print configurations
+print("AWS Region:", aws_region)
+print("S3 Bucket:", s3_bucket_name)
+print("AOSS Collection Name:", aoss_collection_name)
+print("Bedrock Knowledge Base Name:", bedrock_kb_name)
+```
+
+## 2. Create an S3 Data Source
+
+Amazon Bedrock Knowledge Bases can connect to a variety of data sources for downstream RAG applications. Supported data sources include Amazon S3, Confluence, Microsoft SharePoint, Salesforce, Web Crawler, and custom data sources.
+
+In this workshop, we will use Amazon S3 to store unstructured data — specifically, PDF files containing Amazon Shareholder Letters from different years. This S3 bucket will serve as the source of documents for our Knowledge Base. During the ingestion process, Bedrock will parse these documents, convert them into vector embeddings using an embedding model, and store them in a vector database for efficient retrieval during queries.
+
+### 2.1 Create an S3 bucket, if needed
+
+```python
+# Check if bucket exists, and if not create S3 bucket for KB data source
+
+try:
+    s3_client.head_bucket(Bucket=s3_bucket_name)
+    print(f"Bucket '{s3_bucket_name}' already exists..")
+except ClientError as e:
+    print(f"Creating bucket: '{s3_bucket_name}'..")
+    if aws_region == 'us-east-1':
+        s3_client.create_bucket(Bucket=s3_bucket_name)
+    else:
+        s3_client.create_bucket(
+            Bucket=s3_bucket_name,
+            CreateBucketConfiguration={'LocationConstraint': aws_region}
+        )
+```
+
+### 2.2 Download data and upload to S3
+
+```python
+from urllib.request import urlretrieve
+
+# URLs of shareholder letters to download
+urls = [
+    'https://s2.q4cdn.com/299287126/files/doc_financials/2023/ar/2022-Shareholder-Letter.pdf',
+    'https://s2.q4cdn.com/299287126/files/doc_financials/2022/ar/2021-Shareholder-Letter.pdf',
+    'https://s2.q4cdn.com/299287126/files/doc_financials/2021/ar/Amazon-2020-Shareholder-Letter-and-1997-Shareholder-Letter.pdf',
+    'https://s2.q4cdn.com/299287126/files/doc_financials/2020/ar/2019-Shareholder-Letter.pdf'
+]
+
+# Corresponding local file names
+filenames = [
+    'AMZN-2022-Shareholder-Letter.pdf',
+    'AMZN-2021-Shareholder-Letter.pdf',
+    'AMZN-2020-Shareholder-Letter.pdf',
+    'AMZN-2019-Shareholder-Letter.pdf'
+]
+
+# Create local staging directory if it doesn't exist
+os.makedirs(local_data_dir, exist_ok=True)
+
+# Download each file and print confirmation
+for url, filename in zip(urls, filenames):
+    file_path = os.path.join(local_data_dir, filename)
+    urlretrieve(url, file_path)
+    print(f"Downloaded: '{filename}' to '{local_data_dir}'..")
+```
+
+```python
+for root, _, files in os.walk(local_data_dir):
+    for file in files:
+        full_path = os.path.join(root, file)
+        s3_client.upload_file(full_path, s3_bucket_name, file)
+        print(f"Uploaded: '{file}' to 's3://{s3_bucket_name}'..")
+```
+
+## 3 Setup AOSS Vector Index and Configure BKB Access Permissions
+
+In this section, we’ll create a vector index using Amazon OpenSearch Serverless (AOSS) and configure the necessary access permissions for the Bedrock Knowledge Base (BKB) that we’ll set up later. AOSS provides a fully managed, serverless solution for running vector search workloads at billion-vector scale. It automatically handles resource scaling and eliminates the need for cluster management, while delivering low-latency, millisecond response times with pay-per-use pricing.
+
+While this example uses AOSS, it’s worth noting that Bedrock Knowledge Bases also supports other popular vector stores, including Amazon Aurora PostgreSQL with pgvector, Pinecone, Redis Enterprise Cloud, and MongoDB, among others
+
+### 3.1 Create IAM Role with Necessary Permissions for Bedrock Knowledge Base
+
+Let's first create an IAM role with all the necessary policies and permissions to allow BKB to execute operations, such as invoking Bedrock FMs and reading data from an S3 bucket. We will use a helper function for this.
+
+```python
+bedrock_kb_execution_role = utility.create_bedrock_execution_role(bucket_name=s3_bucket_name)
+bedrock_kb_execution_role_arn = bedrock_kb_execution_role['Role']['Arn']
+
+print("Created KB execution role with ARN:", bedrock_kb_execution_role_arn)
+```
+
+### 3.2 Create AOSS Policies and Vector Collection
+
+Next we need to create and attach three key policies for securing and managing access to the AOSS collection: an encryption policy, a network access policy, and a data access policy. These policies ensure proper encryption, network security, and the necessary permissions for creating, reading, updating, and deleting collection items and indexes. This step is essential for configuring the OpenSearch collection to interact with BKB securely and efficiently (you can read more about AOSS collections [here](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless.html)). We will use another helper function for this.
+
+⚠️ **Note:** _in order to keep setup overhead at mininum, in this example we **allow public internet access** to the OpenSearch Serverless collection resource. However, for production environments we strongly suggest to leverage private connection between your VPC and Amazon OpenSearch Serverless resources via an VPC endpoint, as described [here](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-vpc.html)._
+
+```python
+# Create AOSS policies for the new vector collection
+aoss_encryption_policy, aoss_network_policy, aoss_access_policy = utility.create_policies_in_oss(
+    vector_store_name=aoss_collection_name,
+    aoss_client=aoss_client,
+    bedrock_kb_execution_role_arn=bedrock_kb_execution_role_arn)
+
+print("Created encryption policy with name:", aoss_encryption_policy['securityPolicyDetail']['name'])
+print("Created network policy with name:", aoss_network_policy['securityPolicyDetail']['name'])
+print("Created access policy with name:", aoss_access_policy['accessPolicyDetail']['name'])
+```
+
+With all the necessary policies in place, let's proceed to actually creating a new AOSS collection. Please note that this can take a **few minutes to complete**. While you wait, you may want to [explore the AOSS Console](https://console.aws.amazon.com/aos/home?#opensearch/collections), where you will see your AOSS collection being created.
+
+```python
+# Request to create AOSS collection
+aoss_collection = aoss_client.create_collection(name=aoss_collection_name, type='VECTORSEARCH')
+
+# Wait until collection becomes active
+print("Waiting until AOSS collection becomes active: ", end='')
+while True:
+    response = aoss_client.list_collections(collectionFilters={'name': aoss_collection_name})
+    status = response['collectionSummaries'][0]['status']
+    if status in ('ACTIVE', 'FAILED'):
+        print(" done.")
+        break
+    print('█', end='', flush=True)
+    time.sleep(5)
+
+print("An AOSS collection created:", json.dumps(response['collectionSummaries'], indent=2))
+```
+
+### 3.2 Grant BKB Access to AOSS Data
+
+In this step, we create a data access policy that grants BKB the necessary permissions to read from our AOSS collections. We then attach this policy to the Bedrock execution role we created earlier, allowing BKB to securely access AOSS data when generating responses. We will be using helper function once again.
+
+```python
+aoss_policy_arn = utility.create_oss_policy_attach_bedrock_execution_role(
+    collection_id=aoss_collection['createCollectionDetail']['id'],
+    bedrock_kb_execution_role=bedrock_kb_execution_role)
+
+print("Waiting 60 sec for data access rules to be enforced: ", end='')
+for _ in range(12):  # 12 * 5 sec = 60 sec
+    print('█', end='', flush=True)
+    time.sleep(5)
+print(" done.")
+
+print("Created and attached policy with ARN:", aoss_policy_arn)
+```
+
+### 3.3 Create an AOSS Vector Index
+
+Now that we have all necessary access permissions in place, we can create a vector index in the AOSS collection we created previously.
+
+
+
+```python
+from requests_aws4auth import AWS4Auth
+from opensearchpy import OpenSearch, RequestsHttpConnection
+
+# Use default credential configuration for authentication
+credentials = boto_session.get_credentials()
+awsauth = AWS4Auth(
+    credentials.access_key,
+    credentials.secret_key,
+    aws_region,
+    'aoss',
+    session_token=credentials.token)
+
+# Construct AOSS endpoint host
+host = f"{aoss_collection['createCollectionDetail']['id']}.{aws_region}.aoss.amazonaws.com"
+
+# Build the OpenSearch client
+os_client = OpenSearch(
+    hosts=[{'host': host, 'port': 443}],
+    http_auth=awsauth,
+    use_ssl=True,
+    verify_certs=True,
+    connection_class=RequestsHttpConnection,
+    timeout=300
+)
+```
+
+We need to first define the index definiton with the desired indexing configuration, where we specify such things as number of shards and replicas of the index, vector embedding dimensions, the vector search engine (we are using FAISS here), as well as names and types of any other fields we need to have in the index:
+
+```python
+# Define the configuration for the AOSS vector index
+index_definition = {
+   "settings": {
+      "index.knn": "true",
+       "number_of_shards": 1,
+       "knn.algo_param.ef_search": 512,
+       "number_of_replicas": 0,
+   },
+   "mappings": {
+      "properties": {
+         "vector": {
+            "type": "knn_vector",
+            "dimension": embedding_model_dim,
+             "method": {
+                 "name": "hnsw",
+                 "engine": "faiss",
+                 "space_type": "l2"
+             },
+         },
+         "text": {
+            "type": "text"
+         },
+         "text-metadata": {
+            "type": "text"
+         }
+      }
+   }
+}
+
+# Create an OpenSearch index
+response = os_client.indices.create(index=aoss_index_name, body=index_definition)
+
+# Waiting for index creation to propagate
+print("Waiting 30 sec for index update to propagate: ", end='')
+for _ in range(6):  # 6 * 5 sec = 30 sec
+    print('█', end='', flush=True)
+    time.sleep(5)
+print(" done.")
+
+print("A new AOSS index created:", json.dumps(response, indent=2))
+```
+
+## 4. Configure Amazon Bedrock Knowledge Base and Synchronize it with Data Source
+
+In this section, we’ll create an Amazon Bedrock Knowledge Base (BKB) and connect it to the data that will be stored in our newly created AOSS vector index.
+
+### 4.1 Create a Bedrock Knowledge Base
+
+Setting up a Knowledge Base involves providing two key configurations:
+1. **Storage Configuration** tells Bedrock where to store the generated vector embeddings by specifying the target vector store and providing the necessary connection detail (here, we use the AOSS vector index we created earlier),
+2. **Knowledge Base Configuration** defines how Bedrock should generate vector embeddings from your data by specifying the embedding model to use (`Titan Text Embeddings V2` in this sample), along with any additional settings required for handling multimodal content.
+
+```python
+# Vector Storage Configuration
+storage_config = {
+    "type": "OPENSEARCH_SERVERLESS",
+    "opensearchServerlessConfiguration": {
+        "collectionArn": aoss_collection["createCollectionDetail"]['arn'],
+        "vectorIndexName": aoss_index_name,
+        "fieldMapping": {
+            "vectorField": "vector",
+            "textField": "text",
+            "metadataField": "text-metadata"
+        }
+    }
+}
+
+# Knowledge Base Configuration
+knowledge_base_config = {
+    "type": "VECTOR",
+    "vectorKnowledgeBaseConfiguration": {
+        "embeddingModelArn": embedding_model_arn
+    }
+}
+
+response = bedrock_agent_client.create_knowledge_base(
+    name=bedrock_kb_name,
+    description="Amazon shareholder letter knowledge base.",
+    roleArn=bedrock_kb_execution_role_arn,
+    knowledgeBaseConfiguration=knowledge_base_config,
+    storageConfiguration=storage_config)
+
+bedrock_kb_id = response['knowledgeBase']['knowledgeBaseId']
+
+print("Waiting until BKB becomes active: ", end='')
+while True:
+    response = bedrock_agent_client.get_knowledge_base(knowledgeBaseId=bedrock_kb_id)
+    if response['knowledgeBase']['status'] == 'ACTIVE':
+        print(" done.")
+        break
+    print('█', end='', flush=True)
+    time.sleep(5)
+
+print("A new Bedrock Knowledge Base created with ID:", bedrock_kb_id)
+```
+
+Let's call a Bedrock API to get the information about our newly created Knowledge Base:
+
+```python
+response = bedrock_agent_client.get_knowledge_base(knowledgeBaseId=bedrock_kb_id)
+
+print(json.dumps(response['knowledgeBase'], indent=2, default=str))
+```
+
+### 4.2 Connect BKB to a Data Source
+
+With our Knowledge Base in place, the next step is to connect it to a data source. This involves two key actions:
+
+1. **Create a data source for the Knowledge Base** that will point to the location of our raw data (in this case, S3),
+2. **Define how that data should be processed and ingested into the vector store** — for example, by specifying a chunking configuration that controls how large each text fragment should be when generating vector embeddings for retrieval.
+
+```python
+# Data Source Configuration
+data_source_config = {
+        "type": "S3",
+        "s3Configuration":{
+            "bucketArn": f"arn:aws:s3:::{s3_bucket_name}",
+            # "inclusionPrefixes":["*.*"]   # you can use this if you want to create a KB using data within s3 prefixes.
+        }
+    }
+
+# Vector Ingestion Configuration
+vector_ingestion_config = {
+        "chunkingConfiguration": {
+            "chunkingStrategy": "FIXED_SIZE",
+            "fixedSizeChunkingConfiguration": {
+                "maxTokens": 512,
+                "overlapPercentage": 20
+            }
+        }
+    }
+
+response = bedrock_agent_client.create_data_source(
+    name=bedrock_kb_name,
+    description="Amazon shareholder letter knowledge base.",
+    knowledgeBaseId=bedrock_kb_id,
+    dataSourceConfiguration=data_source_config,
+    vectorIngestionConfiguration=vector_ingestion_config
+)
+
+bedrock_ds_id = response['dataSource']['dataSourceId']
+
+print("A new BKB data source created with ID:", bedrock_ds_id)
+```
+
+Let's also use Bedrock API to get the information about our newly created BKB data source:
+
+```python
+response = bedrock_agent_client.get_data_source(knowledgeBaseId=bedrock_kb_id, dataSourceId=bedrock_ds_id)
+
+print(json.dumps(response['dataSource'], indent=2, default=str))
+```
+
+### 4.3 Synchronize BKB with Data Source
+
+Once the Knowledge Base and its data source are configured, we can start a fully-managed data ingestion job. During this process, BKB will retrieve the documents from the connected data source (on S3, in this case), extract and preprocess the content, split it into smaller chunks based on the configured chunking strategy, generate vector embeddings for each chunk, and store those embeddings in the vector store (AOSS vector store, in this case).
+
+![BKB data ingestion](./images/data_ingestion.png)
+
+```python
+# Start an ingestion job
+response = bedrock_agent_client.start_ingestion_job(knowledgeBaseId=bedrock_kb_id, dataSourceId=bedrock_ds_id)
+
+bedrock_job_id = response['ingestionJob']['ingestionJobId']
+
+print("A new BKB ingestion job started with ID:", bedrock_job_id)
+```
+
+```python
+# Wait until ingestion job completes
+print("Waiting until BKB ingestion job completes: ", end='')
+while True:
+    response = bedrock_agent_client.get_ingestion_job(
+        knowledgeBaseId = bedrock_kb_id,
+        dataSourceId = bedrock_ds_id,
+        ingestionJobId = bedrock_job_id)
+    if response['ingestionJob']['status'] == 'COMPLETE':
+        print(" done.")
+        break
+    print('█', end='', flush=True)
+    time.sleep(5)
+
+print("The BKB ingestion job finished:", json.dumps(response['ingestionJob'], indent=2, default=str))
+```
+
+## 5. Conclusions and Next Steps
+
+In this notebook, we walked through the process of creating an Amazon Bedrock Knowledge Base (BKB) and ingesting documents to enable Retrieval Augmented Generation (RAG) capabilities. We started by setting up the environment, installing the required libraries, and initializing the necessary AWS service clients. Then, we created an Amazon S3 bucket to store unstructured data (PDF documents) and uploaded sample files. We proceeded by provisioning an Amazon OpenSearch Serverless (AOSS) collection and index, configuring the appropriate IAM roles and permissions, and granting access to the BKB. Finally, we created the BKB, connected it to the S3 data source, and synchronized the documents to generate vector embeddings, which were stored in AOSS.
+
+### Next Steps
+
+Please execute next cell to store some important varables that will be needed in other notebooks of this module:
+
+```python
+%store s3_bucket_name aoss_encryption_policy aoss_network_policy aoss_access_policy aoss_collection bedrock_kb_id
+```
+
+Now please go on to explore how you can interact with the newly created Knowledge Base via Bedrock APIs for RAG applications, please proceed to the next notebook:
+
+&nbsp; **NEXT ▶** [2_managed-rag-with-retrieve-and-generate-api.ipynb](./2\_managed-rag-with-retrieve-and-generate-api.ipynb).
+
+### 2_managed-rag-with-retrieve-and-generate-api.ipynb
+
+# Module 2 - Build RAG-powered Q&A Application with **RetrieveAndGenerate API**
+
+----
+
+This notebook provides sample code and step-by-step instructions for building a fully-managed question-answering (Q&A) application using a **RetrieveAndGenerate API** of Amazon Bedrock Knowledge Bases.
+
+----
+
+### Introduction
+
+In the previous notebook, we demonstrated how to create a Knowledge Base in Amazon Bedrock — including setting up an S3 data source, configuring an Amazon OpenSearch Serverless (AOSS) vector index, and ingesting documents for retrieval-augmented generation (RAG).
+
+In this notebook, we take the next step: building a Q&A application that can query that Knowledge Base using the `RetrieveAndGenerate` API. This API allows you to retrieve the most relevant content from your Knowledge Base based on a user’s query and automatically pass that information to a foundation model (FM) to generate a grounded, context-aware response.
+
+This is a classic example of the RAG pattern — where external data is dynamically retrieved at query time and incorporated into the model’s prompt to improve relevance, accuracy, and transparency. In this solution, retrieved knowledge base content comes with source attribution, helping end users understand the origin of the response and minimizing the risk of model hallucinations.
+
+![BKB illustration](./images/retrieve_and_generate_api.png)
+
+### Pre-requisites
+
+In order to run this notebook, you should have successfully completed the previous notebook lab:
+- [1_create-kb-and-ingest-documents.ipynb](./1\_create-kb-and-ingest-documents.ipynb).
+
+Also, please make sure that you have enabled the following model access in _Amazon Bedrock Console_:
+- `Amazon Nova Micro`
+- `Amazon Titan Text Embeddings V2`
+
+
+## 1. Setup
+
+### 1.1 Import the required libraries
+
+```python
+# Standard library imports
+import os
+import sys
+import json
+import time
+
+# Third-party imports
+import boto3
+from botocore.client import Config
+from botocore.exceptions import ClientError
+
+# Local imports
+import utility
+
+# Print SDK versions
+print(f"Python version: {sys.version.split()[0]}")
+print(f"Boto3 SDK version: {boto3.__version__}")
+```
+
+### 1.2 Initial setup for clients and global variables
+
+```python
+%store -r bedrock_kb_id
+```
+
+```python
+# Create boto3 session and set AWS region
+boto_session = boto3.Session()
+aws_region = boto_session.region_name
+
+# Create boto3 clients for Bedrock
+bedrock_config = Config(connect_timeout=120, read_timeout=120, retries={'max_attempts': 0})
+bedrock_agent_client = boto3.client('bedrock-agent-runtime', config=bedrock_config)
+
+# Set the Bedrock model to use for text generation
+model_id = 'amazon.nova-micro-v1:0'
+model_arn = f'arn:aws:bedrock:{aws_region}::foundation-model/{model_id}'
+
+# Print configurations
+print("AWS Region:", aws_region)
+print("Bedrock Knowledge Base ID:", bedrock_kb_id)
+```
+
+## 2. Fully-managed RAG with **RetreiveAndGenerate API**
+
+The `RetrieveAndGenerate` API provides a fully managed way to implement the Retrieval-Augmented Generation (RAG) pattern with Amazon Bedrock Knowledge Bases.
+
+When a user submits a query, the API automatically converts the query into vector embeddings, performs a similarity search against the Knowledge Base, and retrieves the most relevant document chunks. These search results are then injected into the foundation model's prompt as additional context, enabling the model to generate more accurate and grounded responses.
+
+For multi-turn conversations, Knowledge Bases also maintain short-term conversational memory — allowing the API to return more contextually relevant answers across a dialogue.
+
+The output of the `RetrieveAndGenerate` API includes:
+
+- The **generated response** from the foundation model
+
+- **Source attribution** metadata for the retrieved content
+
+- The **actual retrieved text chunks** from the Knowledge Base
+
+This makes it easy to build RAG-powered applications with trusted, explainable answers — without having to manage retrieval pipelines or prompt construction yourself.
+
+### 2.1 Retrieve and Generate Example
+
+Let’s now see the `RetrieveAndGenerate` API in action and showcase a fully managed RAG workflow in Amazon Bedrock.
+
+In this example, we’ll use the Knowledge Base built in the previous lab — containing Amazon Shareholder Letters — to demonstrate how the API retrieves relevant information and generates a grounded response to a user query.
+
+```python
+user_query = "How does Amazon use technology to better serve its customers?"
+
+response = bedrock_agent_client.retrieve_and_generate(
+    input={
+        'text': user_query
+    },
+    retrieveAndGenerateConfiguration={
+        'type': 'KNOWLEDGE_BASE',
+        'knowledgeBaseConfiguration': {
+            'knowledgeBaseId': bedrock_kb_id,
+            'modelArn': model_arn
+        }
+    }
+)
+
+print("Final reply:\n", response['output']['text'])
+```
+
+### 2.2 Understanding Citations
+
+Citations play a critical role in retrieval-augmented generation (RAG) systems by helping users verify the accuracy of a response and providing transparency into the source of information. Let's now look at the `citations` past of the Knowledge Base response:
+
+```python
+print("Citations:\n", json.dumps(response["citations"], indent=2, default=str))
+```
+
+Here, the response includes a `generatedResponsePart` field, which contains the natural language answer generated by the model. Each `generatedResponsePart` is paired with `retrievedReferences`, which lists the specific pieces of content from the knowledge base that were used to ground that part of the response. These references include the original source text (`content.text`), as well as metadata like the source URI and page number, so users can easily trace information back to its original document. This structure ensures that answers are both helpful and verifiable, allowing users to explore the source material directly and build trust in the response.
+
+## 3. Conclusions and Next Steps
+
+In this notebook, we built a fully-managed RAG-powered Q&A application using the `RetrieveAndGenerate` API from Amazon Bedrock Knowledge Bases.
+
+We demonstrated how this API simplifies the RAG workflow by automatically retrieving relevant content from a knowledge base and generating grounded, context-aware responses using a foundation model. The responses also include source references, allowing users to easily trace answers back to the original documents.
+
+This approach enables you to quickly build reliable, transparent Q&A solutions without managing the complexity of prompt engineering or retrieval logic manually.
+
+### Next Steps
+
+If you are looking for more flexibility and control over your RAG workflow, Amazon Bedrock Knowledge Bases also provides a `Retrieve` API. This API allows you to perform semantic and/or keyword search over your knowledge base and retrieve the most relevant document chunks, which you can then use to build custom prompts or workflows tailored to your application needs.
+
+To explore this approach, check out the next notebook:
+
+&nbsp; **NEXT ▶** [3_customized-rag-with-retrieve-api](./3\_customized-rag-with-retrieve-api.ipynb)
+
+### 3_customized-rag-with-retrieve-api.ipynb
+
+# Module 2 - Query Knowledge Base and Build RAG-powered Q&A Application with **Retrieve API**
+
+----
+
+This notebook provides sample code and step-by-step instructions for building a question-answering (Q&A) application using a **Retrieve API** of Amazon Bedrock Knowledge Bases.
+
+----
+
+### Introduction
+
+In the previous notebook, we explored the `RetrieveAndGenerate` API from Amazon Bedrock Knowledge Bases — a fully managed RAG (Retrieval-Augmented Generation) solution. As the name suggests, this API not only retrieves the most relevant information from a knowledge base but also automatically generates a response to the user query in a single, fully managed API call.
+
+In this notebook, we will take a closer look at the `Retrieve` API, which provides greater flexibility for building custom RAG solutions. Unlike `RetrieveAndGenerate`, the `Retrieve` API only fetches relevant document chunks from a Knowledge Base based on the user query — leaving it up to the developer to decide how to leverage this retrieved information.
+
+To keep things simple and focused, in this notebook we will use the output of the `Retrieve` API to manually construct an augmented prompt. We will then send this prompt to a Bedrock's foundation model (FM) of our choice to generate a grounded response.
+
+![retrieveAPI](./images/retrieve_api.png)
+
+### Pre-requisites
+
+In order to run this notebook, you should have successfully completed the first notebook lab:
+- [1_create-kb-and-ingest-documents.ipynb](./1\_create-kb-and-ingest-documents.ipynb).
+
+Also, please make sure that you have enabled the following model access in _Amazon Bedrock Console_:
+
+- `Amazon Nova Micro`
+- `Amazon Titan Text Embeddings V2`
+
+## 1. Setup
+
+### 1.1 Import the required libraries
+
+```python
+# Standard library imports
+import os
+import sys
+import json
+import time
+
+# Third-party imports
+import boto3
+from botocore.client import Config
+from botocore.exceptions import ClientError
+
+# Local imports
+import utility
+
+# Print SDK versions
+print(f"Python version: {sys.version.split()[0]}")
+print(f"Boto3 SDK version: {boto3.__version__}")
+```
+
+### 1.2 Initial setup for clients and global variables
+
+```python
+%store -r bedrock_kb_id
+```
+
+```python
+# Create boto3 session and set AWS region
+boto_session = boto3.Session()
+aws_region = boto_session.region_name
+
+# Create boto3 clients for Bedrock
+bedrock_config = Config(connect_timeout=120, read_timeout=120, retries={'max_attempts': 0})
+bedrock_client = boto3.client('bedrock-runtime')
+bedrock_agent_client = boto3.client('bedrock-agent-runtime', config=bedrock_config)
+
+# Set the Bedrock model to use for text generation
+model_id = 'amazon.nova-micro-v1:0'
+model_arn = f'arn:aws:bedrock:{aws_region}::foundation-model/{model_id}'
+
+# Print configurations
+print("AWS Region:", aws_region)
+print("Bedrock Knowledge Base ID:", bedrock_kb_id)
+```
+
+## 2. Using the **Retrieve API** with Foundation Models from Amazon Bedrock
+
+We will begin by defining a `retrieve` function that calls the `Retrieve` API provided by Amazon Bedrock Knowledge Bases (BKB). This API transforms the user query into vector embeddings, searches the connected knowledge base, and returns the most relevant results. This approach gives you fine-grained control to build custom RAG workflows on top of the retrieved content.
+
+The response from the `Retrieve` API includes several useful components:
+
+- The **retrieved document chunks** containing relevant content from the knowledge base  
+- The **source location type** and **URI** for each retrieved document, enabling traceability  
+- The **relevance score** for each document chunk, indicating how well it matches the query  
+
+Additionally, the `Retrieve` API supports the `overrideSearchType` parameter within `retrievalConfiguration`, allowing you to control the search strategy used:
+
+| Search Type | Description |
+|-------------|-------------|
+| `HYBRID`    | Combines semantic search (vector similarity) with keyword search for improved accuracy, especially for structured content. |
+| `SEMANTIC`  | Purely embedding-based semantic search, ideal for unstructured or natural language content. |
+
+By default, Amazon Bedrock automatically selects the optimal search strategy for your query. However, if needed, you can explicitly specify `HYBRID` or `SEMANTIC` using `overrideSearchType` to tailor the search behavior to your use case.
+
+### 2.1 Exploring the **Retrieve API**
+
+```python
+# Implement the `retrieve` function
+def retrieve(user_query, kb_id, num_of_results=5):
+    return bedrock_agent_client.retrieve(
+        retrievalQuery= {
+            'text': user_query
+        },
+        knowledgeBaseId=kb_id,
+        retrievalConfiguration= {
+            'vectorSearchConfiguration': {
+                'numberOfResults': num_of_results,
+                'overrideSearchType': "HYBRID", # optional
+            }
+        }
+    )
+```
+
+```python
+user_query = "What is Amazon doing in the field of Generative AI?"
+
+response = retrieve(user_query, bedrock_kb_id, num_of_results=3)
+
+print("Retrieval Results:\n", json.dumps(response['retrievalResults'], indent=2, default=str))
+```
+
+### 2.2 Generating a Response using Retrieved Context and the **Converse API**
+
+Once we have used the `Retrieve` API to fetch the most relevant document chunks from our knowledge base, the next step is to use this retrieved context to generate a grounded and informative response to the user query.
+
+In this section, we will construct a LLM request that combines both user query and the retrieved knowledge base content. We will then use Amazon Bedrock's `Converse` API to interact with a LLM of our choice to generate the final response.
+
+Specifically:
+- We will define a *system prompt* that provides general behavioral guidelines to the model — for example, instructing it to act like a financial advisor that prioritizes fact-based, concise answers.
+- We will create a *user prompt template* that injects both the retrieved context and the user’s query.
+- Finally, we will use the `Converse` API to generate the model’s response, ensuring that it leverages the provided context to produce accurate and grounded answers.
+
+This pattern enables full control over how context is presented to the model, allowing you to implement custom RAG workflows tailored to your application's needs.
+
+```python
+# Define a system prompt
+system_prompt = """You are a financial advisor AI system, and provides answers to questions
+by using fact based and statistical information when possible. 
+Use the following pieces of information in <context> tags to provide a concise answer to the questions.
+Give an answer directly, without any XML tags.
+If you don't know the answer, just say that you don't know, don't try to make up an answer."""
+
+# Define a user prompt template
+user_prompt_template = """Here is some additional context:
+<context>
+{contexts}
+</context>
+
+Please provide an answer to this user query:
+<query>
+{user_query}
+</query>
+
+The response should be specific and use statistics or numbers when possible."""
+
+# Extract all context from all relevant retrieved document chunks
+contexts = [rr['content']['text'] for rr in response['retrievalResults']]
+```
+
+```python
+# Build Converse API request
+converse_request = {
+    "system": [
+        {"text": system_prompt}
+    ],
+    "messages": [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "text": user_prompt_template.format(contexts=contexts, user_query=user_query)
+                }
+            ]
+        }
+    ],
+    "inferenceConfig": {
+        "temperature": 0.4,
+        "topP": 0.9,
+        "maxTokens": 500
+    }
+}
+
+# Call Bedrock's Converse API to generate the final answer to user query
+response = bedrock_client.converse(
+    modelId=model_id,
+    system=converse_request['system'],
+    messages=converse_request["messages"],
+    inferenceConfig=converse_request["inferenceConfig"]
+)
+
+print("Final Answer:\n", response["output"]["message"]["content"][0]["text"])
+```
+
+## 3. Conclusions and Next Steps
+
+In this notebook, we built a custom RAG-powered Q&A application using Amazon Bedrock Knowledge Bases and the `Retrieve` API.
+
+We followed three main steps:
+- Used the `Retrieve` API to fetch the most relevant document chunks from a knowledge base based on a user query.
+- Constructed an augmented prompt by combining the retrieved content with the user’s question.
+- Used the `Converse` API to generate a grounded, fact-based response leveraging the retrieved context.
+
+This approach provides flexibility and control over both search and response generation, enabling tailored RAG solutions for your specific use case.
+
+### Next Steps
+
+Do not forget to clean up the resources here, if you do not indent to expriment with the created Bedrock Knowledge Base anymore:
+
+&nbsp; **NEXT ▶** [4_clean-up.ipynb](./4\_clean-up.ipynb)
+
+### 4_clean-up.ipynb
+
+# Module 2 - Clean Up AWS Resources
+
+----
+
+When you no longer need the Amazon Bedrock Knowledge Base that we have created in this workshop module, execute this notebook to clean up all the provisioned resources.
+
+----
+
+## Initialize relevant variables and clients
+
+```python
+%store -r s3_bucket_name aoss_encryption_policy aoss_network_policy aoss_access_policy aoss_collection bedrock_kb_id
+```
+
+```python
+import boto3
+import time
+
+boto3_session = boto3.Session()
+bedrock_agent_client = boto3_session.client('bedrock-agent', region_name=boto3_session.region_name)
+aoss_client = boto3.client('opensearchserverless')
+s3_client = boto3_session.client('s3', region_name=boto3_session.region_name)
+iam_client = boto3.client("iam")
+```
+
+## Delete Bedrock Knowledge Base data sources
+
+```python
+# Fetch data source(s)associated with kb
+response = bedrock_agent_client.list_data_sources(knowledgeBaseId=bedrock_kb_id)
+data_sources_list = [ds_summary for ds_summary in response['dataSourceSummaries']]
+
+for idx, ds in enumerate(data_sources_list):
+    bedrock_agent_client.delete_data_source(dataSourceId=ds["dataSourceId"], knowledgeBaseId=ds["knowledgeBaseId"])
+    time.sleep(10)
+```
+
+## Remove Bedrock Knowledge Bases and OpenSearch Collection
+
+```python
+# Fetch BKB execution role
+response = bedrock_agent_client.get_knowledge_base(knowledgeBaseId=bedrock_kb_id)
+bedrock_kb_role_name = response['knowledgeBase']['roleArn'].split("/")[-1]
+```
+
+```python
+# Fetch all attched policies with kb execution role
+kb_attached_role_policies_response = iam_client.list_attached_role_policies(
+    RoleName=bedrock_kb_role_name)
+kb_attached_role_policies = kb_attached_role_policies_response['AttachedPolicies']
+```
+
+```python
+bedrock_agent_client.delete_knowledge_base(knowledgeBaseId=bedrock_kb_id)
+aoss_client.delete_collection(id=aoss_collection['createCollectionDetail']['id'])
+aoss_client.delete_access_policy(type="data", name=aoss_access_policy['accessPolicyDetail']['name'])
+aoss_client.delete_security_policy(type="network", name=aoss_network_policy['securityPolicyDetail']['name'])
+aoss_client.delete_security_policy(type="encryption", name=aoss_encryption_policy['securityPolicyDetail']['name'])
+```
+
+## Delete IAM Role and Policies
+
+```python
+for policy in kb_attached_role_policies:
+    iam_client.detach_role_policy(
+        RoleName=bedrock_kb_role_name,
+        PolicyArn=policy['PolicyArn']
+    )
+```
+
+```python
+iam_client.delete_role(RoleName=bedrock_kb_role_name)
+```
+
+```python
+for policy in kb_attached_role_policies:
+    iam_client.delete_policy(PolicyArn=policy['PolicyArn'])
+```
+
+## Delete S3 Objects and Bucket
+
+```python
+objects = s3_client.list_objects(Bucket=s3_bucket_name)
+
+if 'Contents' in objects:
+    for obj in objects['Contents']:
+        s3_client.delete_object(Bucket=s3_bucket_name, Key=obj['Key'])
+        
+s3_client.delete_bucket(Bucket=s3_bucket_name)
+```
+
+### utility.py
+
+```python
+import boto3
+import random
+import time
+import json
+
+suffix = random.randrange(200, 900)
+boto3_session = boto3.session.Session()
+region_name = boto3_session.region_name
+iam_client = boto3_session.client('iam')
+account_number = boto3.client('sts').get_caller_identity().get('Account')
+identity = boto3.client('sts').get_caller_identity()['Arn']
+
+encryption_policy_name = f"bedrock-sample-rag-sp-{suffix}"
+network_policy_name = f"bedrock-sample-rag-np-{suffix}"
+access_policy_name = f'bedrock-sample-rag-ap-{suffix}'
+bedrock_execution_role_name = f'AmazonBedrockExecutionRoleForKnowledgeBase_{suffix}'
+fm_policy_name = f'AmazonBedrockFoundationModelPolicyForKnowledgeBase_{suffix}'
+s3_policy_name = f'AmazonBedrockS3PolicyForKnowledgeBase_{suffix}'
+sm_policy_name = f'AmazonBedrockSecretPolicyForKnowledgeBase_{suffix}'
+oss_policy_name = f'AmazonBedrockOSSPolicyForKnowledgeBase_{suffix}'
+
+sm_policy_flag = False
+
+def create_bedrock_execution_role(bucket_name):
+    foundation_model_policy_document = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "bedrock:InvokeModel",
+                ],
+                "Resource": [
+                    f"arn:aws:bedrock:{region_name}::foundation-model/amazon.titan-embed-text-v1",
+                    f"arn:aws:bedrock:{region_name}::foundation-model/amazon.titan-embed-text-v2:0"
+                ]
+            }
+        ]
+    }
+
+    s3_policy_document = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "s3:GetObject",
+                    "s3:ListBucket"
+                ],
+                "Resource": [
+                    f"arn:aws:s3:::{bucket_name}",
+                    f"arn:aws:s3:::{bucket_name}/*"
+                ],
+                "Condition": {
+                    "StringEquals": {
+                        "aws:ResourceAccount": f"{account_number}"
+                    }
+                }
+            }
+        ]
+    }
+
+    assume_role_policy_document = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": "bedrock.amazonaws.com"
+                },
+                "Action": "sts:AssumeRole"
+            }
+        ]
+    }
+    # create policies based on the policy documents
+    fm_policy = iam_client.create_policy(
+        PolicyName=fm_policy_name,
+        PolicyDocument=json.dumps(foundation_model_policy_document),
+        Description='Policy for accessing foundation model',
+    )
+
+    s3_policy = iam_client.create_policy(
+        PolicyName=s3_policy_name,
+        PolicyDocument=json.dumps(s3_policy_document),
+        Description='Policy for reading documents from s3')
+
+    # create bedrock execution role
+    bedrock_kb_execution_role = iam_client.create_role(
+        RoleName=bedrock_execution_role_name,
+        AssumeRolePolicyDocument=json.dumps(assume_role_policy_document),
+        Description='Amazon Bedrock Knowledge Base Execution Role for accessing OSS and S3',
+        MaxSessionDuration=3600
+    )
+
+    # fetch arn of the policies and role created above
+    bedrock_kb_execution_role_arn = bedrock_kb_execution_role['Role']['Arn']
+    s3_policy_arn = s3_policy["Policy"]["Arn"]
+    fm_policy_arn = fm_policy["Policy"]["Arn"]
+    
+
+    # attach policies to Amazon Bedrock execution role
+    iam_client.attach_role_policy(
+        RoleName=bedrock_kb_execution_role["Role"]["RoleName"],
+        PolicyArn=fm_policy_arn
+    )
+    iam_client.attach_role_policy(
+        RoleName=bedrock_kb_execution_role["Role"]["RoleName"],
+        PolicyArn=s3_policy_arn
+    )
+    return bedrock_kb_execution_role
+
+
+def create_oss_policy_attach_bedrock_execution_role(collection_id, bedrock_kb_execution_role):
+    # define oss policy document
+    oss_policy_document = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "aoss:APIAccessAll"
+                ],
+                "Resource": [
+                    f"arn:aws:aoss:{region_name}:{account_number}:collection/{collection_id}"
+                ]
+            }
+        ]
+    }
+    oss_policy = iam_client.create_policy(
+        PolicyName=oss_policy_name,
+        PolicyDocument=json.dumps(oss_policy_document),
+        Description='Policy for accessing opensearch serverless',
+    )
+    oss_policy_arn = oss_policy["Policy"]["Arn"]
+
+    iam_client.attach_role_policy(
+        RoleName=bedrock_kb_execution_role["Role"]["RoleName"],
+        PolicyArn=oss_policy_arn
+    )
+    return oss_policy_arn
+
+
+def create_policies_in_oss(vector_store_name, aoss_client, bedrock_kb_execution_role_arn):
+    encryption_policy = aoss_client.create_security_policy(
+        name=encryption_policy_name,
+        policy=json.dumps(
+            {
+                'Rules': [{'Resource': ['collection/' + vector_store_name],
+                           'ResourceType': 'collection'}],
+                'AWSOwnedKey': True
+            }),
+        type='encryption'
+    )
+
+    network_policy = aoss_client.create_security_policy(
+        name=network_policy_name,
+        policy=json.dumps(
+            [
+                {'Rules': [{'Resource': ['collection/' + vector_store_name],
+                            'ResourceType': 'collection'}],
+                 'AllowFromPublic': True}
+            ]),
+        type='network'
+    )
+    access_policy = aoss_client.create_access_policy(
+        name=access_policy_name,
+        policy=json.dumps(
+            [
+                {
+                    'Rules': [
+                        {
+                            'Resource': ['collection/' + vector_store_name],
+                            'Permission': [
+                                'aoss:CreateCollectionItems',
+                                'aoss:DeleteCollectionItems',
+                                'aoss:UpdateCollectionItems',
+                                'aoss:DescribeCollectionItems'],
+                            'ResourceType': 'collection'
+                        },
+                        {
+                            'Resource': ['index/' + vector_store_name + '/*'],
+                            'Permission': [
+                                'aoss:CreateIndex',
+                                'aoss:DeleteIndex',
+                                'aoss:UpdateIndex',
+                                'aoss:DescribeIndex',
+                                'aoss:ReadDocument',
+                                'aoss:WriteDocument'],
+                            'ResourceType': 'index'
+                        }],
+                    'Principal': [identity, bedrock_kb_execution_role_arn],
+                    'Description': 'Easy data policy'}
+            ]),
+        type='data'
+    )
+    return encryption_policy, network_policy, access_policy
+
+
+def delete_iam_role_and_policies():
+    fm_policy_arn = f"arn:aws:iam::{account_number}:policy/{fm_policy_name}"
+    s3_policy_arn = f"arn:aws:iam::{account_number}:policy/{s3_policy_name}"
+    oss_policy_arn = f"arn:aws:iam::{account_number}:policy/{oss_policy_name}"
+    sm_policy_arn = f"arn:aws:iam::{account_number}:policy/{sm_policy_name}"
+
+    iam_client.detach_role_policy(
+        RoleName=bedrock_execution_role_name,
+        PolicyArn=s3_policy_arn
+    )
+    iam_client.detach_role_policy(
+        RoleName=bedrock_execution_role_name,
+        PolicyArn=fm_policy_arn
+    )
+    iam_client.detach_role_policy(
+        RoleName=bedrock_execution_role_name,
+        PolicyArn=oss_policy_arn
+    )
+
+    # Delete Secrets manager policy only if it was created (i.e. for Confluence, SharePoint or Salesforce data source)
+    if sm_policy_flag:
+        iam_client.detach_role_policy(
+            RoleName=bedrock_execution_role_name,
+            PolicyArn=sm_policy_arn
+        )
+        iam_client.delete_policy(PolicyArn=sm_policy_arn)
+    iam_client.delete_role(RoleName=bedrock_execution_role_name)
+    iam_client.delete_policy(PolicyArn=s3_policy_arn)
+    iam_client.delete_policy(PolicyArn=fm_policy_arn)
+    iam_client.delete_policy(PolicyArn=oss_policy_arn)
+    
+    return 0
+
+
+def interactive_sleep(seconds: int):
+    dots = ''
+    for i in range(seconds):
+        dots += '.'
+        print(dots, end='\r')
+        time.sleep(1)
+
+def create_bedrock_execution_role_multi_ds(bucket_names = None, secrets_arns = None):
+    
+    # 0. Create bedrock execution role
+
+    assume_role_policy_document = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": "bedrock.amazonaws.com"
+                },
+                "Action": "sts:AssumeRole"
+            }
+        ]
+    }
+    
+    # create bedrock execution role
+    bedrock_kb_execution_role = iam_client.create_role(
+        RoleName=bedrock_execution_role_name,
+        AssumeRolePolicyDocument=json.dumps(assume_role_policy_document),
+        Description='Amazon Bedrock Knowledge Base Execution Role for accessing OSS, secrets manager and S3',
+        MaxSessionDuration=3600
+    )
+
+    # fetch arn of the role created above
+    bedrock_kb_execution_role_arn = bedrock_kb_execution_role['Role']['Arn']
+
+    # 1. Cretae and attach policy for foundation models
+    foundation_model_policy_document = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "bedrock:InvokeModel",
+                ],
+                "Resource": [
+                    f"arn:aws:bedrock:{region_name}::foundation-model/amazon.titan-embed-text-v1",
+                    f"arn:aws:bedrock:{region_name}::foundation-model/amazon.titan-embed-text-v2:0"
+                ]
+            }
+        ]
+    }
+    
+    fm_policy = iam_client.create_policy(
+        PolicyName=fm_policy_name,
+        PolicyDocument=json.dumps(foundation_model_policy_document),
+        Description='Policy for accessing foundation model',
+    )
+  
+    # fetch arn of this policy 
+    fm_policy_arn = fm_policy["Policy"]["Arn"]
+    
+    # attach this policy to Amazon Bedrock execution role
+    iam_client.attach_role_policy(
+        RoleName=bedrock_kb_execution_role["Role"]["RoleName"],
+        PolicyArn=fm_policy_arn
+    )
+
+    # 2. Cretae and attach policy for s3 bucket
+    if bucket_names:
+        s3_policy_document = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "s3:GetObject",
+                        "s3:ListBucket"
+                    ],
+                    "Resource": [item for sublist in [[f'arn:aws:s3:::{bucket}', f'arn:aws:s3:::{bucket}/*'] for bucket in bucket_names] for item in sublist], 
+                    "Condition": {
+                        "StringEquals": {
+                            "aws:ResourceAccount": f"{account_number}"
+                        }
+                    }
+                }
+            ]
+        }
+        # create policies based on the policy documents
+        s3_policy = iam_client.create_policy(
+            PolicyName=s3_policy_name,
+            PolicyDocument=json.dumps(s3_policy_document),
+            Description='Policy for reading documents from s3')
+
+        # fetch arn of this policy 
+        s3_policy_arn = s3_policy["Policy"]["Arn"]
+        
+        # attach this policy to Amazon Bedrock execution role
+        iam_client.attach_role_policy(
+            RoleName=bedrock_kb_execution_role["Role"]["RoleName"],
+            PolicyArn=s3_policy_arn
+        )
+
+    # 3. Cretae and attach policy for secrets manager
+    if secrets_arns:
+        sm_policy_flag = True
+        secrets_manager_policy_document = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "secretsmanager:GetSecretValue",
+                        "secretsmanager:PutSecretValue"
+                    ],
+                    "Resource": secrets_arns
+                }
+            ]
+        }
+        # create policies based on the policy documents
+        
+        secrets_manager_policy = iam_client.create_policy(
+            PolicyName=sm_policy_name,
+            PolicyDocument=json.dumps(secrets_manager_policy_document),
+            Description='Policy for accessing secret manager',
+        )
+
+        # fetch arn of this policy
+        sm_policy_arn = secrets_manager_policy["Policy"]["Arn"]
+
+        # attach policy to Amazon Bedrock execution role
+        iam_client.attach_role_policy(
+            RoleName=bedrock_kb_execution_role["Role"]["RoleName"],
+            PolicyArn=sm_policy_arn
+        )
+    
+    return bedrock_kb_execution_role
+
+```
+
+
+
+# END OF PROMPT

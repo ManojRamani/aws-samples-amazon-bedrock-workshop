@@ -1,0 +1,3134 @@
+# Debug Log for 03_Model_customization
+# Generated on: 2025-07-06 at 17:43:00
+# Prompt length: 104805 characters
+# Estimated token count: ~26201 tokens
+
+# FULL PROMPT:
+
+# Amazon Bedrock Workshop Module Analysis Prompt
+
+You are an expert technical tutor who specializes in breaking down complex implementation details into easily understandable explanations.
+
+## Task
+Analyze and document the codebase in the folder 03_Model_customization and create a comprehensive summary.
+
+## Deliverables
+
+### Code Analysis
+- Thoroughly examine the implementation details, architecture patterns, and key components
+
+### Summary Document
+Create a well-structured file named SUMMARY-03_Model_customization.md.md with the following sections:
+
+1. **Executive summary** (high-level overview)
+2. **Implementation details breakdown**
+3. **Key takeaways and lessons learned**
+4. **Technical architecture overview**
+5. **Recommendations or next steps** (if applicable)
+
+### Visual Documentation
+Include Mermaid diagrams where they add value:
+- Flowcharts for program logic
+- Sequence diagrams for user journeys (IMPORTANT: For any API interactions or request/response flows, include a sequence diagram showing the step-by-step process)
+- Architecture diagrams for system design
+- Class diagrams for object relationships
+- Choose the most appropriate diagram type for each context
+
+IMPORTANT: For modules involving APIs, always include at least one sequence diagram showing the request/response flow between components.
+
+### Additional Requirements
+- Use clear, jargon-free explanations suitable for intermediate developers
+- Provide code snippets with explanations where helpful
+- Highlight potential issues, optimizations, or best practices
+- Access the latest documentation using Context7 MCP when available
+
+## Output Format
+Markdown with proper headings, code blocks, and embedded Mermaid diagrams
+Place the generated report in my-analysis/SUMMARY-03_Model_customization.md.md
+
+
+IMPORTANT: Start your response directly with the title '# SUMMARY-03_Model_customization.md' (not abbreviated). Do not include any introductory text, preamble, or markdown tags before the title. Begin with the exact title and proceed with the analysis.
+
+# Folder Content to Analyze
+
+# Folder Content Summary for 03_Model_customization
+
+## README Content
+
+# Lab 10 - Custom Models 
+
+
+<div class="alert alert-block alert-warning">
+<b>Warning:</b> This module cannot be executed in Workshop Studio Accounts, and you will have to run this notebook in your own account.
+</div>
+
+
+## Overview
+Model customization is the process of providing training data to a model in order to improve its performance for specific use-cases. You can customize Amazon Bedrock foundation models in order to improve their performance and create a better customer experience. Amazon Bedrock currently provides the following customization methods.
+
+- Fine-tuning
+
+    Provide labeled data in order to train a model to improve performance on specific tasks. By providing a training dataset of labeled examples, the model learns to associate what types of outputs should be generated for certain types of inputs. The model parameters are adjusted in the process and the model's performance is improved for the tasks represented by the training dataset.
+
+- Continued Pre-training 
+
+    Provide unlabeled data to pre-train a foundation model by familiarizing it with certain types of inputs. You can provide data from specific topics in order to expose a model to those areas. The Continued Pre-training process will tweak the model parameters to accommodate the input data and improve its domain knowledge. For example, you can train a model with private data, such as business documents, that are not publically available for training large language models. Additionally, you can continue to improve the model by retraining the model with more unlabeled data as it becomes available.
+
+## Relevance
+Using your own data, you can privately and securely customize foundation models (FMs) in Amazon Bedrock to build applications that are specific to your domain, organization, and use case. Custom models enable you to create unique user experiences that reflect your company’s style, voice, and services.
+
+- With fine-tuning, you can increase model accuracy by providing your own task-specific labeled training dataset and further specialize your FMs. 
+- With continued pre-training, you can train models using your own unlabeled data in a secure and managed environment with customer managed keys. Continued pre-training helps models become more domain-specific by accumulating more robust knowledge and adaptability—beyond their original training.
+
+This module walks you through how to customize models through fine-tuning and continued pre-training, how to provision the custom models with provisioned throughput, and how to compare and evaluate model performance. 
+
+## Target Audience
+
+This module can be executed by any developer familiar with Python, also by data scientists and other technical people who aspire to customize FMs in Bedrock. 
+
+## Setup
+- In this module, please run the the 01_setup.ipynb notebook first to make sure resources are properly set up for the following notebooks in this lab.
+- At the end of the module, please run the 03_cleanup.ipynb to make sure resources are removed to avoid unnecessary costs.
+
+
+## Patterns
+
+In this workshop, you will be able to learn following patterns on customizing FMs in Bedrock:
+
+
+# Fine tuning - 
+
+1. [Fine-tune and Evaluate Amazon Nova in Bedrock ](./bedrock-models-fine-tuning/amazon-nova/01_Amazon_Nova_Finetuning_Walkthrough.ipynb): Demonstrates an end-to-end workflow for fine-tuning, provisioning and evaluating a Amazon Nova in Amazon Bedrock.
+2. [Fine-tune and Evaluate Claude Haiku in Bedrock](./bedrock-models-fine-tuning/claude-haiku/02_fine-tune_Claude_Haiku.ipynb): Demonstrates an end-to-end workflow for fine-tuning, provisioning and evaluating a Claude Haiku in Amazon Bedrock.
+3. [Fine-tune and Evaluate Meta Llama 3 in Bedrock](./bedrock-models-fine-tuning/meta-llama/Llama-3.2%20Multi-modal%20cusotmization/02_fine-tune_llama3.2.ipynb): Demonstrates an end-to-end workflow for fine-tuning, provisioning and evaluating a Meta Llama 3.2 multimodal customization in Amazon Bedrock.
+
+# Continued Pretraining - 
+
+1. [Continued Pretraining with Amazon Titan ](./continued%20Pre-training/02_continued_pretraining_titan_text.ipynb): Demonstrates an end-to-end workflow for continued pretraining Amazon Titan model in Amazon Bedrock.
+
+## File Statistics
+
+Total files found: 15
+Notebooks: 9
+Python files: 0
+Markdown files: 4
+Other files: 2
+
+Important files selected based on patterns: 5
+
+## Files in the folder
+
+### Notebooks
+- 01_fine-tune_Amazon_Nova.ipynb
+- 02_Inference_Amazon_Nova.ipynb
+- 01_setup.ipynb
+- 02_fine-tune_Claude_Haiku.ipynb
+- 01_setup_llama-3.2.ipynb
+- 02_fine-tune_llama3.2.ipynb
+- 01_setup.ipynb
+- 02_continued_pretraining_titan_text.ipynb
+- 03_cleanup.ipynb
+
+### Markdown Files
+
+### Other Files
+- requirements.txt
+
+## Content of Key Files
+
+### 01_fine-tune_Amazon_Nova.ipynb
+
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
+# Fine-Tune Amazon Nova model provided by Amazon Bedrock: End-to-End
+
+This notebook demonstrates the end-to-end process of fine-tuning Amazon Nova Lite and Amazon Nova Micro model using Amazon Bedrock, including selecting the base model, configuring hyperparameters, creating and monitoring the fine-tuning job, deploying the fine-tuned model with provisioned throughput and evaluating the performance of the fine-tuned model. 
+
+Note: The following steps can also be done through the Amazon Bedrock Console
+
+# Prerequisites
+
+- Make sure you have prepared a fine-tuning dataset following the format required [here]( 
+https://docs.aws.amazon.com/nova/latest/userguide/customize-fine-tune-prepare.html)
+- Make sure your AWS account has appropriate permissions (e.g. access to Amazon Bedrock (us-east-1))
+
+```python
+!pip install -qU -r requirements.txt
+```
+
+```python
+# restart kernel for packages to take effect
+from IPython.core.display import HTML
+HTML("<script>Jupyter.notebook.kernel.restart()</script>")
+```
+
+# Setup
+
+```python
+import boto3 
+from botocore.config import Config
+import sys
+import pandas as pd
+import matplotlib.pyplot as plt
+import json
+import time 
+import concurrent.futures
+import shortuuid
+import tqdm
+import os
+```
+
+```python
+my_config = Config(
+    region_name = 'us-east-1', 
+    signature_version = 'v4',
+    retries = {
+        'max_attempts': 5,
+        'mode': 'standard'
+    })
+
+bedrock = boto3.client(service_name="bedrock", config=my_config)
+```
+
+```python
+## Specify input S3 bucket
+
+input_s3_uri = "s3://ft-aws-domain/ft_bedrock_data/ft_olympus_jsonl/aws_train_olympus.jsonl"
+output_s3_uri = "s3://ft-aws-domain/model_output/ft_nova_lite_aws_v1/"
+```
+
+# Select the base model to fine-tune
+
+You need to provide the `base_model_id` for the model you want to fine-tune. You can find a list of the foundational model ids by invoking the `list_foundation_models` API:
+
+``` \n
+for model in bedrock.list_foundation_models(
+    byCustomizationType="FINE_TUNING")["modelSummaries"]:
+    for key, value in model.items():
+        print(key, ":", value)
+    print("-----\n")
+```
+
+```python
+nova_micro_identifier = "arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-micro-v1:0:128k"
+nova_lite_identifier = "arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-lite-v1:0:300k"
+```
+
+Next, provide the `customization_job_name`, `custom_model_name` and `customization_role` which will be used to create the fine-tuning job.
+
+```python
+# Nova model customization currently only available in US EAST 1
+
+role_name = # Replace with your role name
+role_arn = # Replace with your role ARN
+
+job_name = "aws-ft-nova-lite-v1"
+model_name = job_name 
+```
+
+# Create fine-tuning job
+
+<div class=\"alert alert-block alert-info\">
+    <b>Note:</b> Fine-tuning job will take around 2-4 hrs to complete.</div>
+
+| ***Parameter Name*** | ***Parameter Description*** | ***Type*** | ***Min*** | ***Max*** | **Default** |
+| ------- | ------------- | ------ | --------- | ----------- | ----------- |
+| Epochs | The maximum number of iterations through the entire training dataset | integer | 1 | 5 | 2 |
+| Learning rate | The rate at which model parameters are updated after each batch of training data | float | 1.00E-06 | 1.00E-04 | 1.00E-05 |
+| Learning rate warmup steps | Number of iterations over which learning rate is gradually increased to the initial rate specified | integer | 0 | 20 | 10 |
+| Batch size | The number of samples processed before updating model parameters | integer | NA | NA | Fixed at 1|
+
+```python
+# Select the customization type from "FINE_TUNING" or "CONTINUED_PRE_TRAINING". 
+customization_type = "FINE_TUNING"
+
+
+# Define the hyperparameters for fine-tuning Amazon Nova model
+hyper_parameters = {
+        "epochCount": "1",
+        "learningRate": '0.000001', 
+        "batchSize": "1",
+    }
+
+
+response_ft = bedrock.create_model_customization_job(
+    customizationType=customization_type,
+    jobName = job_name,
+    customModelName = model_name,
+    roleArn = role_arn,
+    baseModelIdentifier = nova_lite_identifier,
+    hyperParameters=hyper_parameters,
+    trainingDataConfig={"s3Uri": input_s3_uri},
+    outputDataConfig={"s3Uri": output_s3_uri},
+)
+```
+
+# Check fine-tuning job status
+
+```python
+jobArn = response_ft.get('jobArn')
+status = bedrock.get_model_customization_job(jobIdentifier=jobArn)["status"]
+print(f'Job status: {status}')
+```
+
+# Setup provisioned throughput
+
+Once the job status changes to `complete`, we need to create provisioned throughput which is needed for running inference on the fine-tuned Amazon Nova model. For more information on provisioned throughput, please refer to [this documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/prov-throughput.html)
+
+```python
+provisioned_model_name = 'finetuned_nova_lite'
+custom_model_id = 'aws-ft-nova-lite-v1'
+
+provisioned_model_id = bedrock.create_provisioned_model_throughput(
+                                        modelUnits=1,
+                                        provisionedModelName=provisioned_model_name,
+                                        modelId=custom_model_id
+                            )
+
+print(provisioned_model_id['provisionedModelArn'])
+```
+
+```python
+status_provisioning = bedrock.get_provisioned_model_throughput(provisionedModelId = provisioned_model_id)['status']
+
+import time
+while status_provisioning == 'Creating':
+    time.sleep(60)
+    status_provisioning = bedrock.get_provisioned_model_throughput(provisionedModelId=provisioned_model_id)['status']
+    print(status_provisioning)
+    time.sleep(60)
+```
+
+# Delete provisioned throughput
+
+<b>Warning</b>: Please make sure to delete providsioned throughput as there will cost incurred if its left in running state, even if you are not using it.
+
+```python
+bedrock.delete_provisioned_model_throughput(provisionedModelId=provisioned_model_id)
+```
+
+### 02_Inference_Amazon_Nova.ipynb
+
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
+# Inference with Customized Amazon Nova Models 
+
+This notebook walk-through how to conduct inference on fine-tuned Amazon Nova models. We first demonstrate a single example followed by example scripts for running batch inference.
+
+# Prerequisites
+
+- Make sure you have executed 01_Amazon_Nova_Finetuning_Walkthrough.ipynb notebook.
+- Make sure you are using the same kernel and instance as 01_Amazon_Nova_Finetuning_Walkthrough.ipynb notebook.
+
+```python
+!pip install -qU -r requirements.txt
+```
+
+```python
+# restart kernel for packages to take effect
+from IPython.core.display import HTML
+HTML("<script>Jupyter.notebook.kernel.restart()</script>")
+```
+
+# Setup
+
+```python
+import boto3 
+from botocore.config import Config
+import sys
+import pandas as pd
+import matplotlib.pyplot as plt
+import json
+import time 
+import concurrent.futures
+import shortuuid
+import tqdm
+import os
+```
+
+```python
+my_config = Config(
+    region_name = 'us-east-1', 
+    signature_version = 'v4',
+    retries = {
+        'max_attempts': 5,
+        'mode': 'standard'
+    })
+
+bedrock = boto3.client(service_name="bedrock", config=my_config)
+```
+
+# Construct model input 
+
+Before invoking the customized models, we need to construct model input following the format needed by Amazon Nova models.
+
+```python
+# API setting constants
+API_MAX_RETRY = 16
+API_RETRY_SLEEP = 10
+API_ERROR_OUTPUT = "$ERROR$"
+
+
+def create_nova_messages(prompt):
+    """
+    Create messages array for Amazon Nova models from conversation
+
+    Args:
+    conv (object): Conversation object containing messages
+
+    Returns:
+    list: List of formatted messages for Amazon Nova model
+    """
+    messages = []
+    
+    messages.append({
+            "role": "user",
+            "content": [{"text": prompt}]
+        })
+
+    return messages
+
+def chat_completion_aws_bedrock_nova(model, conv, temperature, max_tokens, aws_region="us-east-1"):
+    """
+    Call AWS Bedrock API for chat completion using Amazon Nova models
+
+    Args:
+    model (str): Model ID
+    conv (object): Conversation object containing messages
+    temperature (float): Temperature parameter for response generation
+    max_tokens (int): Maximum tokens in response
+    api_dict (dict, optional): API configuration dictionary
+    aws_region (str, optional): AWS region, defaults to "us-west-2"
+
+    Returns:
+    str: Generated response text or error message
+    """
+
+    # Configure AWS client 
+    bedrock_rt_client = boto3.client(
+            service_name='bedrock-runtime',
+            region_name=aws_region,
+        )
+
+    
+    # Retry logic for API calls
+    for _ in range(API_MAX_RETRY):
+        try:
+            # Create messages from conversation
+            messages = create_nova_messages(conv)
+            inferenceConfig = {
+                "max_new_tokens": max_tokens,
+                "temperature": temperature, 
+            }
+
+            # Prepare request body
+            model_kwargs = {"messages": messages,
+                            "inferenceConfig": inferenceConfig}
+            body = json.dumps(model_kwargs)
+
+            # Call Bedrock API
+            response = bedrock_rt_client.invoke_model(
+                body=body,
+                modelId=model,
+                accept='application/json',
+                contentType='application/json'
+            )
+
+            # Parse response
+            response_body = json.loads(response.get('body').read())
+            
+            output = response_body['output']['message']['content'][0]['text']
+            break
+
+        except Exception as e:
+            print(type(e), e)
+            ## Uncomment time.sleep if encounter Bedrock invoke throttling error
+            # time.sleep(API_RETRY_SLEEP)
+
+    return output
+```
+
+# Inference on customized Amazon Nova model (individual example)
+
+```python
+# [Important!] Update `base_model_id` to `provisioned_model_id` based on the previous jupyter notebook
+base_model_id = 'amazon.nova-lite-v1:0'
+temperature = 0.2
+max_tokens = 1024
+
+ques = "What specific details are collected and sent to AWS when anonymous operational metrics are enabled for an Amazon EFS file system?"
+
+print(chat_completion_aws_bedrock_nova(base_model_id, ques, temperature+0.01, max_tokens, aws_region="us-east-1"))      
+```
+
+# Batch inference with customized Amazon Nova model 
+
+In this section, we provide code snippets for efficiently running batch inference using the same `chat_completion_aws_bedrock_nova` function as above.
+
+```python
+# Load test cases 
+question_file = f"dataset/test_set/question_short.jsonl"
+
+questions = []
+with open(question_file, "r", encoding="utf-8") as ques_file:
+    for line in ques_file:
+        if line:
+            questions.append(json.loads(line))
+
+print(questions[0]["turns"])
+```
+
+```python
+# Helper function that helps organize answers from customized Amazon Nova model
+
+def get_answer(
+    question: dict, model_id: str, num_choices: int, max_tokens: int, temperature: float, answer_file: str
+):
+
+    choices = []
+
+    for i in range(num_choices):
+        conv = ""
+        turns = []
+        
+        for j in range(len(question["turns"])):
+            conv += question["turns"][j]
+            output = chat_completion_aws_bedrock_nova(model_id, conv, temperature+0.01, max_tokens, aws_region="us-east-1")        
+            turns.append(output)
+
+        choices.append({"index": i, "turns": turns})
+
+    # Dump answers
+    ans = {
+        "question_id": question["question_id"],
+        "answer_id": shortuuid.uuid(),
+        "model_id": model,
+        'use_rag': False,
+        "choices": choices,
+        "tstamp": time.time(),
+    }
+
+    os.makedirs(os.path.dirname(answer_file), exist_ok=True)
+    with open(answer_file, "a", encoding="utf-8") as f:
+        f.write(json.dumps(ans) + "\n")
+```
+
+```python
+# Run batch inference and save model output
+
+## [Important!] Update `base_model_id` to `provisioned_model_id` based on the previous jupyter notebook
+model_id = 'amazon.nova-lite-v1:0'
+num_choices = 1 
+max_tokens = 1024
+temperature = 0.2
+    
+answer_file = f"dataset/model_answer/{model_id}_V2.jsonl"
+print(f"Output to {answer_file}")
+
+with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+    futures = []
+    for question in questions:
+        future = executor.submit(
+            get_answer,
+            question,
+            model_id,
+            num_choices,
+            max_tokens,
+            temperature,
+            answer_file,
+        )
+        futures.append(future)
+
+    for future in tqdm.tqdm(
+        concurrent.futures.as_completed(futures), total=len(futures)
+    ):
+        future.result()
+```
+
+# [Optional] Plot training loss
+
+Optionally, you can also plot training loss using the `step_wise_training_metrics.csv` file generated from the finetuning job. This csv file and other model artifacts can be found under Amazon Bedrock -> Custom model -> Custom model name -> Output data (S3 location)  
+
+```python
+def plot_training_loss(input_file, output_file):
+    ''' This function plots training loss using the default model output file 'step_wise_training_metrics.csv' generated from the finetuning job'''
+    
+    # Read the CSV file
+    df = pd.read_csv(input_file)
+    
+    # Create the plot
+    plt.figure(figsize=(10, 6))
+    plt.plot(df['step_number'], df['training_loss'], 'b-', linewidth=2)
+    
+    # Customize the plot
+    plt.title('Training Loss vs Step Number', fontsize=14)
+    plt.xlabel('Step Number', fontsize=12)
+    plt.ylabel('Training Loss', fontsize=12)
+    plt.grid(True, linestyle='--', alpha=0.7)
+    
+    # Add some padding to the axes
+    plt.margins(x=0.02)
+    
+    # Save the plot
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    print(f"Plot saved as {output_file}")
+
+
+# Example usage
+
+plot_training_loss(input_file = 'model_training_loss/aws-ft-nova-lite/step_wise_training_metrics_epoch5_lr_1e-06.csv', 
+                   output_file = 'model_training_loss/aws-ft-nova-lite/training_loss_epoch5_lr_1e-06.png')
+
+
+```
+
+# Conclusion
+
+In this and last notebook, we provided a detailed walkthrough on how to fine-tune, host, and conduct inference with customized Amazon Nova through the Amazon Bedrock API. Please refer to the [guidelines](https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-guidelines.html) for more tips on fine-tuning Amazon Nova models to meet your need.
+
+# Delete provisioned throughput
+
+<b>Warning</b>: Please make sure to delete providsioned throughput as there will cost incurred if its left in running state, even if you are not using it.
+
+```python
+bedrock.delete_provisioned_model_throughput(provisionedModelId=provisioned_model_id)
+```
+
+### 01_setup.ipynb
+
+# Data Preparation for Anthropic Claude-3 Haiku Fine-Tuning
+
+This notebook will guide you through the process of creating the necessary resources and preparing the datasets for fine-tuning the Anthropic Claude-3 Haiku model using Amazon Bedrock. By the end of this notebook, you will have created an IAM role, an S3 bucket, and training, validation, and testing datasets in the required format for the fine-tuning process.
+
+### Pre-requisites
+
+#### Custom job role
+
+The notebook allows you to either create a Bedrock role for running customization jobs in the **Create IAM customisation job role** section or you can skip this section and create Bedrock Service role for customization jobs following [instructions on managing permissions for customization jobs](https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-iam-role.html). If you want to using an existing custom job role please edit the variable **customization_role** and also ensure it has access to the S3 bucket which is created containing the dataset. 
+
+#### Create IAM Pre-requisites
+
+This notebook requires permissions to:
+
+- create and delete Amazon IAM roles
+- create, update and delete Amazon S3 buckets
+- access Amazon Bedrock
+
+If you are running this notebook without an Admin role, make sure that your role include the following managed policies:
+
+- IAMFullAccess
+
+- AmazonS3FullAccess
+
+- AmazonBedrockFullAccess
+
+You can also create a custom model in the Bedrock console following the instructions [here](https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-submit.html).
+
+### Setup
+
+Install and import all the needed libraries and dependencies to complete this notebook.
+
+<div class="alert alert-block alert-warning">
+<b>Warning:</b> Please ignore error messages related to pip's dependency resolver.
+</div>
+
+```python
+!pip install --upgrade pip
+%pip install --no-build-isolation --force-reinstall \
+    "boto3>=1.28.57" \
+    "awscli>=1.29.57" \
+    "botocore>=1.31.57"
+!pip install -qU --force-reinstall langchain typing_extensions pypdf urllib3==2.1.0
+!pip install -qU ipywidgets>=7,<8
+!pip install jsonlines
+!pip install datasets==2.15.0
+!pip install pandas==2.1.3
+!pip install matplotlib==3.8.2
+```
+
+```python
+# restart kernel for packages to take effect
+from IPython.core.display import HTML
+HTML("<script>Jupyter.notebook.kernel.restart()</script>")
+```
+
+```python
+import warnings
+warnings.filterwarnings('ignore')
+import json
+import os
+import sys
+import boto3 
+import time
+import pprint
+from datasets import load_dataset
+import random
+import jsonlines
+```
+
+```python
+session = boto3.session.Session()
+region = session.region_name
+sts_client = boto3.client('sts')
+account_id = sts_client.get_caller_identity()["Account"]
+s3_suffix = f"{region}-{account_id}"
+bucket_name = f"bedrock-haiku-customization-{s3_suffix}"
+s3_client = boto3.client('s3')
+bedrock = boto3.client(service_name="bedrock")
+bedrock_runtime = boto3.client(service_name="bedrock-runtime")
+iam = boto3.client('iam', region_name=region)
+```
+
+```python
+import uuid
+suffix = str(uuid.uuid4())
+role_name = "BedrockRole-" + suffix
+s3_bedrock_finetuning_access_policy="BedrockPolicy-" + suffix
+customization_role = f"arn:aws:iam::{account_id}:role/{role_name}"
+```
+
+### Testing boto3 connection
+
+We will list the foundation models to test the boto3 connection and make sure bedrock client has been successfully created. 
+
+```python
+for model in bedrock.list_foundation_models(
+    byCustomizationType="FINE_TUNING")["modelSummaries"]:
+    for key, value in model.items():
+        print(key, ":", value)
+    print("-----\n")
+```
+
+### Create S3 Bucket
+
+In this step we will create a S3 bucket, which will be used to store data for Claude-3 Haiku fine-tuning notebook. 
+
+```python
+# Create S3 bucket for knowledge base data source
+s3bucket = s3_client.create_bucket(
+    Bucket=bucket_name,
+    ## Uncomment the following if you run into errors
+    # CreateBucketConfiguration={
+    #     'LocationConstraint':region,
+    # },
+)
+```
+
+### Creating Role and Policies Required to Run Customization Jobs with Amazon Bedrock
+
+This JSON object defines the trust relationship that allows the bedrock service to assume a role that will give it the ability to talk to other required AWS services. The conditions set restrict the assumption of the role to a specfic account ID and a specific component of the bedrock service (model_customization_jobs)
+
+```python
+ROLE_DOC = f"""{{
+    "Version": "2012-10-17",
+    "Statement": [
+        {{
+            "Effect": "Allow",
+            "Principal": {{
+                "Service": "bedrock.amazonaws.com"
+            }},
+            "Action": "sts:AssumeRole",
+            "Condition": {{
+                "StringEquals": {{
+                    "aws:SourceAccount": "{account_id}"
+                }},
+                "ArnEquals": {{
+                    "aws:SourceArn": "arn:aws:bedrock:{region}:{account_id}:model-customization-job/*"
+                }}
+            }}
+        }}
+    ]
+}}
+"""
+```
+
+This JSON object defines the permissions of the role we want bedrock to assume to allow access to the S3 bucket that we created that will hold our fine-tuning datasets and allow certain bucket and object manipulations.
+
+```python
+ACCESS_POLICY_DOC = f"""{{
+    "Version": "2012-10-17",
+    "Statement": [
+        {{
+            "Effect": "Allow",
+            "Action": [
+                "s3:AbortMultipartUpload",
+                "s3:DeleteObject",
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:GetBucketAcl",
+                "s3:GetBucketNotification",
+                "s3:ListBucket",
+                "s3:PutBucketNotification"
+            ],
+            "Resource": [
+                "arn:aws:s3:::{bucket_name}",
+                "arn:aws:s3:::{bucket_name}/*"
+            ]
+        }}
+    ]
+}}"""
+```
+
+```python
+response = iam.create_role(
+    RoleName=role_name,
+    AssumeRolePolicyDocument=ROLE_DOC,
+    Description="Role for Bedrock to access S3 for haiku finetuning",
+)
+pprint.pp(response)
+```
+
+```python
+role_arn = response["Role"]["Arn"]
+pprint.pp(role_arn)
+```
+
+```python
+response = iam.create_policy(
+    PolicyName=s3_bedrock_finetuning_access_policy,
+    PolicyDocument=ACCESS_POLICY_DOC,
+)
+pprint.pp(response)
+```
+
+```python
+policy_arn = response["Policy"]["Arn"]
+pprint.pp(policy_arn)
+```
+
+```python
+iam.attach_role_policy(
+    RoleName=role_name,
+    PolicyArn=policy_arn,
+)
+```
+
+### Prepare Dataset for Claude-3 Haiku fine-tuning and Evaluation
+
+The dataset that will be used is a collection of messenger-like conversations with summaries. 
+
+```python
+#Load samsum dataset from huggingface
+dataset = load_dataset("knkarthick/samsum")
+```
+
+```python
+print(dataset)
+```
+
+To fine-tune the Claude-3 Haiku model, the training data must be in `JSONL (JSON Lines)` format, where each line represents a single training record. Specifically, the training data format aligns with the [MessageAPI](https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-anthropic-claude-messages.html):
+
+<pre style="background-color: #e0e0e0;">
+{"system": string, "messages": [{"role": "user", "content": string}, {"role": "assistant", "content": string}]}
+{"system": string, "messages": [{"role": "user", "content": string}, {"role": "assistant", "content": string}]}
+{"system": string, "messages": [{"role": "user", "content": string}, {"role": "assistant", "content": string}]}
+</pre>
+
+
+In each line, the `system` message is optional information, which is a way of providing context and instructions to Haiku model, such as specifying a particular goal or role, and often known as [system prompt](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/system-prompts). 
+The `user` input corresponds to the user’s instruction, and the `assistant` input is the desired response that the fine-tuned Haiku model should provide. 
+
+A common prompt structure for instruction fine-tuning includes a system prompt, an instruction, and an input which provides additional context. Here we define the system prompt which will be added to the MessageAPI, and an intruction header that will be added before each article and together will be the user content of each datapoint.
+
+```python
+system_string = "Below is an intruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request."
+```
+
+```python
+instruction = """instruction:
+
+Summarize the conversation provided below.
+
+input:
+"""
+```
+
+For the 'assistant' component we will refer the summary/highlights of the article. The transformation of each datapoint is performed with the code below
+
+```python
+# Process the training dataset
+datapoints_train=[]
+for dp in dataset['train']:
+    temp_dict={}
+    temp_dict["system"] = system_string
+    temp_dict["messages"] = [
+        {"role": "user", "content": instruction+dp['dialogue']},
+        {"role": "assistant", "content": dp['summary']}
+    ]
+    datapoints_train.append(temp_dict)
+```
+
+An example of a processed datapoint can be printed below
+
+```python
+print(datapoints_train[4])
+```
+
+The same processing is done for the validation and test sets as well.
+
+```python
+# Process validation and test sets
+datapoints_valid=[]
+for dp in dataset['validation']:
+    temp_dict={}
+    temp_dict["system"] = system_string
+    temp_dict["messages"] = [
+        {"role": "user", "content": instruction+dp['dialogue']},
+        {"role": "assistant", "content": dp['summary']}
+    ]
+    datapoints_valid.append(temp_dict)
+```
+
+```python
+datapoints_test=[]
+for dp in dataset['test']:
+    temp_dict={}
+    temp_dict["system"] = system_string
+    temp_dict["messages"] = [
+        {"role": "user", "content": instruction+dp['dialogue']},
+        {"role": "assistant", "content": dp['summary']}
+    ]
+    datapoints_test.append(temp_dict)
+```
+
+Here we define some helper functions to process our datapoints further by modifying the number of datapoints we want to include in each set and the max string length of the datapoints we want to include. The final function will convert our datasets into JSONL files.
+
+```python
+def dp_transform(data_points,num_dps,max_dp_length):
+    """
+    This function filters and selects a subset of data points from the provided list based on the specified maximum length 
+    and desired number of data points.
+    """ 
+    lines=[]
+    for dp in data_points:
+        if len(dp['system']+dp['messages'][0]['content']+dp['messages'][1]['content'])<=max_dp_length:
+            lines.append(dp)
+    random.shuffle(lines)
+    lines=lines[:num_dps]
+    return lines
+```
+
+```python
+def jsonl_converter(dataset,file_name):
+    """
+    This function writes the provided dataset to a JSONL (JSON Lines) file.
+    """
+    print(file_name)
+    with jsonlines.open(file_name, 'w') as writer:
+        for line in dataset:
+            writer.write(line)
+```
+
+Claude-3 Haiku fine-tuning has following requirements on your datasets:
+
+- Context length can be up to 32,000 tokens
+- Training dataset can not have greater than 10,000 records
+- Validation dataset can not have great than 1,000 records
+
+For simplicity, we will process the datasets as follow
+
+```python
+train=dp_transform(datapoints_train,1000,20000)
+validation=dp_transform(datapoints_valid,100,20000)
+test=dp_transform(datapoints_test,10,20000)
+```
+
+### Create Local Directory for Datasets
+
+Save the processed data locally and convert them into JSONL formats
+
+```python
+dataset_folder="haiku-fine-tuning-datasets-samsum"
+train_file_name="train-samsum-1K.jsonl"
+validation_file_name="validation-samsum-100.jsonl"
+test_file_name="test-samsum-10.jsonl"
+!mkdir haiku-fine-tuning-datasets-samsum
+abs_path=os.path.abspath(dataset_folder)
+```
+
+```python
+jsonl_converter(train,f'{abs_path}/{train_file_name}')
+jsonl_converter(validation,f'{abs_path}/{validation_file_name}')
+jsonl_converter(test,f'{abs_path}/{test_file_name}')
+```
+
+### Upload Datasets to S3 Bucket
+
+These code blocks upload the created training, validation and test datasets to S3 bucket. Training and validation datasets will be used for Haiku fine-tuning job, and testing dataset will be used to evaluate the performance between fine-tuned Haiku and base Haiku models. 
+
+```python
+s3_client.upload_file(f'{abs_path}/{train_file_name}', bucket_name, f'haiku-fine-tuning-datasets/train/{train_file_name}')
+s3_client.upload_file(f'{abs_path}/{validation_file_name}', bucket_name, f'haiku-fine-tuning-datasets/validation/{validation_file_name}')
+s3_client.upload_file(f'{abs_path}/{test_file_name}', bucket_name, f'haiku-fine-tuning-datasets/test/{test_file_name}')
+```
+
+```python
+s3_train_uri=f's3://{bucket_name}/haiku-fine-tuning-datasets/train/{train_file_name}'
+s3_validation_uri=f's3://{bucket_name}/haiku-fine-tuning-datasets/validation/{validation_file_name}'
+s3_test_uri=f's3://{bucket_name}/haiku-fine-tuning-datasets/test/{test_file_name}'
+```
+
+### Storing Variables
+
+Please make sure to use the same kernel on fine-tuning Haiku notebook
+
+```python
+%store role_arn
+%store bucket_name
+%store role_name
+%store policy_arn
+%store s3_train_uri
+%store s3_validation_uri
+%store s3_test_uri
+```
+
+```python
+
+```
+
+### 02_fine-tune_Claude_Haiku.ipynb
+
+# Fine-Tune Claude-3 Haiku model provided by Amazon Bedrock: End-to-End
+
+This notebook demonstrates the end-to-end process of fine-tuning the Anthropic Claude-3 Haiku model using Amazon Bedrock, including selecting the base model, configuring hyperparameters, creating and monitoring the fine-tuning job, deploying the fine-tuned model with provisioned throughput and evaluating the performance of the fine-tuned model. 
+
+You can also do this through the Bedrock Console.
+
+## Prerequisites
+
+ - Make sure you have executed `01_setup.ipynb` notebook.
+ - Make sure you are using the same kernel and instance as `01_setup.ipynb` notebook.
+
+<div class="alert alert-block alert-warning">
+<b>Warning:</b> This notebook will create provisioned throughput for testing the fine-tuned model. Therefore, please make sure to delete the provisioned throughput as mentioned in the last section of the notebook, otherwise you will be charged for it, even if you are not using it.
+</div>
+
+```python
+!pip install -qU bert_score
+```
+
+```python
+# restart kernel for packages to take effect
+from IPython.core.display import HTML
+HTML("<script>Jupyter.notebook.kernel.restart()</script>")
+```
+
+```python
+## Fetching varialbes from `00_Setup&DataPrep_Haiku.ipynb` notebook. 
+%store -r role_arn
+%store -r s3_train_uri
+%store -r s3_validation_uri
+%store -r s3_test_uri
+%store -r bucket_name
+```
+
+```python
+import pprint
+pprint.pp(role_arn)
+pprint.pp(s3_train_uri)
+pprint.pp(s3_validation_uri)
+pprint.pp(s3_test_uri)
+pprint.pp(bucket_name)
+```
+
+## Setup
+
+```python
+import warnings
+warnings.filterwarnings('ignore')
+import json
+import os
+import sys
+import boto3
+import time
+```
+
+```python
+session = boto3.session.Session()
+region = session.region_name
+sts_client = boto3.client('sts')
+s3_client = boto3.client('s3')
+aws_account_id = sts_client.get_caller_identity()["Account"]
+bedrock = boto3.client(service_name="bedrock")
+bedrock_runtime = boto3.client(service_name="bedrock-runtime")
+```
+
+```python
+test_file_name = "test-samsum-10.jsonl"
+data_folder = "haiku-fine-tuning-datasets-samsum"
+```
+
+## Select the model you would like to fine-tune
+You will have to provide the `base_model_id` for the model you are planning to fine-tune. You can get that using `list_foundation_models` API as follows: 
+```
+for model in bedrock.list_foundation_models(
+    byCustomizationType="FINE_TUNING")["modelSummaries"]:
+    for key, value in model.items():
+        print(key, ":", value)
+    print("-----\n")
+```
+
+```python
+base_model_id = "anthropic.claude-3-haiku-20240307-v1:0:200k"
+```
+
+Next you will need to provide the `customization_job_name`, `custom_model_name` and `customization_role` which will be used to create the fine-tuning job. 
+
+```python
+from datetime import datetime
+ts = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+
+customization_job_name = f"model-finetune-job-{ts}"
+custom_model_name = f"finetuned-model-{ts}"
+customization_role = role_arn
+```
+
+## Create fine-tuning job
+
+<div class="alert alert-block alert-info">
+<b>Note:</b> Fine-tuning job will take around 2-4 hrs to complete.</div>
+
+Anthropic Claude 3 Haiku fine-tuning in Amazon Bedrock allows customers to define various hyperparameters that can significantly impact the fine-tuning process and the resulting model’s performance. 
+
+
+| ***Parameter Name*** | ***Parameter Description*** | ***Type*** | ***Default*** | **Value Range** |
+| ------- | ------------- | ------ | --------- | ----------- |
+| epochCount | The maximum number of iterations through the entire training dataset | integer | 2 | 1 - 10 |
+| batchSize | The number of samples processed before updating model parameters | integer | 32 | 4 - 256 |
+| learningRateMultiplier | Multiplier that influences the learning rate at which model parameters are updated after each batch | float | 1 | 0.1 - 2 |
+| earlyStoppingThreshold | The minimum improvement in validation loss required to prevent premature termination of the training process | float | 0.001 | 0-0.1 | 
+| earlyStoppingPatience | The tolerance for stagnation in the validation loss metric before stopping the training process | int | 2 | 1 - 10 |
+
+
+
+```python
+# Select the customization type from "FINE_TUNING" or "CONTINUED_PRE_TRAINING". 
+customization_type = "FINE_TUNING"
+```
+
+```python
+# Define the hyperparameters for fine-tuning Claude-3 Haiku model
+hyper_parameters = {
+        "epochCount": "5",
+        "batchSize": "32",
+        "learningRateMultiplier": "1",
+        "earlyStoppingThreshold": "0.001",
+        "earlyStoppingPatience": "2"
+    }
+
+
+s3_bucket_config=f's3://{bucket_name}/outputs/output-{custom_model_name}'
+# Specify your data path for training, validation(optional) and output
+training_data_config = {"s3Uri": s3_train_uri}
+
+validation_data_config = {
+        "validators": [{
+            # "name": "validation",
+            "s3Uri": s3_validation_uri
+        }]
+    }
+
+output_data_config = {"s3Uri": s3_bucket_config}
+
+
+# Create the customization job of fine-tuning Claude model in Amazon Bedrock. This part also starts executing the fine-tuning job underneath in Amzon Bedrock.
+training_job_response = bedrock.create_model_customization_job(
+    customizationType=customization_type,
+    jobName=customization_job_name,
+    customModelName=custom_model_name,
+    roleArn=customization_role,
+    baseModelIdentifier=base_model_id,
+    hyperParameters=hyper_parameters,
+    trainingDataConfig=training_data_config,
+    validationDataConfig=validation_data_config,
+    outputDataConfig=output_data_config
+)
+training_job_response
+```
+
+## Check fine-tuning job status
+
+You can see the status of the fine-funing job by using the API or by check Bedrock Console --> Foundation Models --> Custom Models --> Jobs
+
+```python
+fine_tune_job = bedrock.get_model_customization_job(jobIdentifier=customization_job_name)["status"]
+print(fine_tune_job)
+
+while fine_tune_job == "InProgress":
+    time.sleep(60)
+    fine_tune_job = bedrock.get_model_customization_job(jobIdentifier=customization_job_name)["status"]
+    print (fine_tune_job)
+    time.sleep(60)
+```
+
+```python
+fine_tune_job = bedrock.get_model_customization_job(jobIdentifier=customization_job_name)
+```
+
+```python
+pprint.pp(fine_tune_job)
+```
+
+```python
+output_job_name = "model-customization-job-"+fine_tune_job['jobArn'].split('/')[-1]
+output_job_name
+```
+
+Now we are ready to create [`provisioned throughput`](#) which is needed before you can do the inference on the fine-tuned model.
+
+### Overview of Provisioned throughput
+You specify Provisioned Throughput in Model Units (MU). A model unit delivers a specific throughput level for the specified model. The throughput level of a MU for a given Text model specifies the following:
+
+- The total number of input tokens per minute – The number of input tokens that an MU can process across all requests within a span of one minute.
+
+- The total number of output tokens per minute – The number of output tokens that an MU can generate across all requests within a span of one minute.
+
+Model unit quotas depend on the level of commitment you specify for the Provisioned Throughput.
+
+- For custom models with no commitment, a quota of one model unit is available for each Provisioned Throughput. You can create up to two Provisioned Throughputs per account.
+
+- For base or custom models with commitment, there is a default quota of 0 model units. To request an increase, use the [limit increase form](#https://support.console.aws.amazon.com/support/home#/case/create?issueType=service-limit-increase).
+
+## Retrieve Custom Model
+Once the customization job is finished, you can check your existing custom model(s) and retrieve the modelArn of your fine-tuned model.
+
+```python
+# List your custom models
+bedrock.list_custom_models()
+```
+
+```python
+model_id = bedrock.get_custom_model(modelIdentifier=custom_model_name)['modelArn']
+model_id
+```
+
+## Create Provisioned Throughput
+<div class="alert alert-block alert-info">
+<b>Note:</b> Creating provisioned throughput will take around 20-30mins to complete.</div>
+
+You will need to create provisioned throughput to be able to evaluate the model performance. You can do so through the [console].(https://docs.aws.amazon.com/bedrock/latest/userguide/prov-cap-console.html) or use the following api call:
+
+```python
+import boto3 
+boto3.client(service_name='bedrock')
+provisioned_model_id = bedrock.create_provisioned_model_throughput(
+ modelUnits=1,
+ provisionedModelName='test-haiku-ft-model', 
+ modelId=model_id
+)['provisionedModelArn']     
+```
+
+```python
+status_provisioning = bedrock.get_provisioned_model_throughput(provisionedModelId = provisioned_model_id)['status']
+```
+
+```python
+import time
+while status_provisioning == 'Creating':
+    time.sleep(60)
+    status_provisioning = bedrock.get_provisioned_model_throughput(provisionedModelId=provisioned_model_id)['status']
+    print(status_provisioning)
+    time.sleep(60)
+```
+
+## Invoke the Custom Model
+
+Before invoking lets get the sample prompt from our test data. 
+
+```python
+# Provide the prompt text 
+test_file_path = f'{data_folder}/{test_file_name}'
+with open(test_file_path) as f:
+    lines = f.read().splitlines()
+```
+
+```python
+test_system_prompt = json.loads(lines[3])['system']
+test_user_prompt = json.loads(lines[3])['messages'][0]['content']
+reference_summary = json.loads(lines[3])['messages'][1]['content']
+pprint.pp(test_system_prompt)
+pprint.pp(test_user_prompt)
+pprint.pp(reference_summary)
+```
+
+```python
+message = [
+        {
+            "role": "user",
+            "content": test_user_prompt
+        }
+    ]
+```
+
+```python
+base_model_arn = f'arn:aws:bedrock:{region}::foundation-model/anthropic.claude-3-haiku-20240307-v1:0'
+```
+
+Make sure to construct model input following the format needed by Anthropic Claude Message API [here](#https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-anthropic-claude-messages.html). 
+Please pay attention to the "Model invocation request body field" section in the `body` variable, which we will pass as payload to the custom model trained above. 
+
+Alternatively, you can also use [Converse API](#https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html) in Amazon Bedrock to invoke model regardless of specific input format the model requires. 
+
+```python
+body=json.dumps(
+    {
+        "anthropic_version": "bedrock-2023-05-31",
+        "max_tokens": 2048,
+        "messages": message,
+        "temperature": 0.1,
+        "top_p": 0.9,
+        "system": test_system_prompt
+    }  
+)  
+
+fine_tuned_response = bedrock_runtime.invoke_model(body=body, 
+                                        modelId=provisioned_model_id)
+
+base_model_response = bedrock_runtime.invoke_model(body=body, 
+                                        modelId=base_model_arn)
+
+fine_tuned_response_body = json.loads(fine_tuned_response.get('body').read())
+base_model_response_body = json.loads(base_model_response.get('body').read())
+
+print("Base model response: ", base_model_response_body['content'][0]['text'] + '\n')
+print("Fine tuned model response:", fine_tuned_response_body['content'][0]['text']+'\n')
+print("Reference summary from test data: " , reference_summary)
+
+```
+
+```python
+#fine_tuned_response_body
+```
+
+```python
+#base_model_response_body
+```
+
+```python
+#print("Fine tuned model response:", fine_tuned_response_body['content'][0]['text']+'\n')
+
+# print("Base model response: ", base_model_response_body['content'][0]['text'] + '\n')
+# print("Fine tuned model response:", fine_tuned_response_body['content'][0]['text']+'\n')
+# print("Reference summary from test data: " , reference_summary)
+
+
+#print("Fine tuned model response:", fine_tuned_response_body['content'][0]['text']+'\n')
+```
+
+```python
+# body=json.dumps(
+#     {
+#         "anthropic_version": "bedrock-2023-05-31",
+#         "max_tokens": 2048,
+#         "messages": message,
+#         "temperature": 0.1,
+#         "top_p": 0.9,
+#         "system": test_system_prompt
+#     }  
+# )  
+
+# fine_tuned_response = bedrock_runtime.invoke_model(body=body, 
+#                                         modelId=provisioned_model_id)
+
+# base_model_response = bedrock_runtime.invoke_model(body=body, 
+#                                         modelId=base_model_arn)
+
+# fine_tuned_response_body = json.loads(fine_tuned_response.get('body').read())
+# base_model_response_body = json.loads(base_model_response.get('body').read())
+
+# print("Base model response: ", base_model_response_body["results"][0]["outputText"] + '\n')
+# print("Fine tuned model response:", fine_tuned_response_body["results"][0]["outputText"]+'\n')
+# print("Reference summary from test data: " , reference_summary)
+```
+
+## Evaluate the performance of the model 
+In this section, we will use `BertScore` metrics  to evaluate the performance of the fine-tuned model as compared to base model to check if fine-tuning has improved the results.
+
+- `BERTScore`: calculates the similarity between a summary and reference texts based on the outputs of BERT (Bidirectional Encoder Representations from Transformers), a powerful language model. [Medium article link](#https://haticeozbolat17.medium.com/bertscore-and-rouge-two-metrics-for-evaluating-text-summarization-systems-6337b1d98917)
+
+```python
+base_model_generated_response = [base_model_response_body['content'][0]['text']]
+fine_tuned_generated_response = [fine_tuned_response_body['content'][0]['text']]
+```
+
+```python
+from bert_score import score
+reference_summary = [reference_summary]
+fine_tuned_model_P, fine_tuned_R, fine_tuned_F1 = score(fine_tuned_generated_response, reference_summary, lang="en")
+base_model_P, base_model_R, base_model_F1 = score(base_model_generated_response, reference_summary, lang="en")
+print("F1 score: base model ", base_model_F1)
+print("F1 score: fine-tuned model", fine_tuned_F1)
+```
+
+## Conclusion
+From the scores above and looking at the base model summary, fine-tuned model summary and reference summary, it clearly indicates that fine-tuning the model tends to improve the results on the task its trained on. We only used 1K records for training with 100 validation records and 2 epochs, and were able to get better results. 
+
+<div class="alert alert-block alert-info">
+<b>Tip:</b> 
+    Please refer to the <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-guidelines.html" style="color: #3372FF">guidelines </a> provided for fine-tuning the model based on your task. </div>
+
+## Delete provisioned througput
+<div class="alert alert-block alert-warning">
+<b>Warning:</b> Please make sure to delete providsioned throughput as there will cost incurred if its left in running state, even if you are not using it. 
+</div>
+
+```python
+bedrock.delete_provisioned_model_throughput(provisionedModelId=provisioned_model_id)
+```
+
+### 01_setup_llama-3.2.ipynb
+
+# Fine-tuning Llama 3.2 with Vision Capabilities - Data Preparation
+
+## Introduction
+
+Fine-tuning multi-modal models allows you to enhance their capabilities for specific visual understanding tasks. This notebook demonstrates how to prepare data for fine-tuning Meta Llama 3.2 with vision capabilities using Amazon Bedrock. We'll use a subset of the llava-instruct dataset to create training, validation, and test sets in the required format.
+
+The Llama 3.2 vision model can process and understand both text and images, enabling it to answer questions about visual content. Fine-tuning can improve the model's performance on domain-specific visual tasks.
+
+In this notebook, we'll:
+
+- Download a subset of the llava-instruct dataset
+- Process the images and upload them to Amazon S3
+- Format the data according to the Bedrock conversation schema
+- Prepare the dataset for fine-tuning
+
+## Prerequisites
+
+
+Before starting, ensure you have:
+
+- An AWS account with access to Amazon Bedrock
+- Appropriate IAM permissions for Bedrock and S3
+- A working Python environment with the necessary libraries
+
+You'll need to create an IAM role with the following permissions:
+
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:ListBucket"
+            ],
+            "Resource": [
+                "arn:aws:s3:::YOUR_BUCKET_NAME",
+                "arn:aws:s3:::YOUR_BUCKET_NAME/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "bedrock:CreateModelCustomizationJob",
+                "bedrock:GetModelCustomizationJob",
+                "bedrock:ListModelCustomizationJobs",
+                "bedrock:StopModelCustomizationJob"
+            ],
+            "Resource": "arn:aws:bedrock:us-west-2:YOUR_ACCOUNT_ID:model-customization-job/*"
+        }
+    ]
+}
+```
+
+## Setup
+
+First, let's install and import the necessary libraries:
+
+```python
+# Install required libraries
+%pip install --upgrade pip
+%pip install boto3 datasets pillow tqdm --upgrade --quiet
+```
+
+```python
+# Restart kernel to ensure updated packages take effect
+from IPython.core.display import HTML
+HTML("<script>Jupyter.notebook.kernel.restart()</script>")
+```
+
+```python
+import boto3
+import os
+import json
+import time
+import shutil
+from tqdm import tqdm
+from datasets import load_dataset
+from PIL import Image
+import io
+import uuid
+import warnings
+warnings.filterwarnings('ignore')
+```
+
+```python
+# Set AWS region
+region = "us-west-2"  # Llama 3.2 fine-tuning is currently only available in us-west-2
+```
+
+```python
+# Create AWS clients
+session = boto3.session.Session(region_name=region)
+s3_client = session.client('s3')
+sts_client = session.client('sts')
+bedrock = session.client(service_name="bedrock")
+
+# Get account ID
+account_id = sts_client.get_caller_identity()["Account"]
+
+# Generate bucket name with account ID for uniqueness
+bucket_name = f"llama32-vision-ft-{account_id}-{region}"
+
+print(f"Account ID: {account_id}")
+print(f"Bucket name: {bucket_name}")
+```
+
+## Create S3 Bucket
+
+Let's create an S3 bucket to store our images and processed data:
+
+```python
+try:
+    if region == 'us-east-1':
+        s3_client.create_bucket(
+            Bucket=bucket_name
+        )
+    else:
+        # For all other regions, specify the LocationConstraint
+        s3_client.create_bucket(
+            Bucket=bucket_name,
+            CreateBucketConfiguration={'LocationConstraint': region}
+        )
+    print(f"Bucket {bucket_name} created successfully")
+except s3_client.exceptions.BucketAlreadyExists:
+    print(f"Bucket {bucket_name} already exists")
+except s3_client.exceptions.BucketAlreadyOwnedByYou:
+    print(f"Bucket {bucket_name} already owned by you")
+except Exception as e:
+    print(f"Error creating bucket: {e}")
+```
+
+## Download and Prepare the Dataset
+
+For this example, we'll use a subset of the llava-instruct dataset from Hugging Face. We'll limit the data to 1000 samples for training, 100 for validation, and 100 for testing to keep this demonstration manageable.
+
+<div style="background-color: #FFFFCC; color: #856404; padding: 15px; border-left: 6px solid #FFD700; margin-bottom: 15px;">
+<h3 style="margin-top: 0; color: #856404;">⚠️ Large Dataset Warning</h3>
+<p>This cell downloads the COCO image dataset which:</p>
+<ul>
+  <li>Is approximately <b>19.3 GB</b> in size</li>
+  <li>May take <b>~10 minutes</b> to download depending on your internet connection</li>
+  <li>Requires at least <b>25 GB</b> of free disk space for download, extraction, and processing</li>
+</ul>
+<p>Please ensure you have sufficient storage and a stable internet connection before proceeding.</p>
+</div>
+
+```python
+import requests
+import zipfile
+from tqdm import tqdm
+
+# Create directories to store images and metadata
+os.makedirs('llava_images/train', exist_ok=True)
+os.makedirs('llava_images/val', exist_ok=True)
+os.makedirs('llava_images/test', exist_ok=True)
+
+# Function to download a file with progress bar
+def download_file(url, save_path):
+    print(f"Downloading {url}...")
+    response = requests.get(url, stream=True)
+    total_size = int(response.headers.get('content-length', 0))
+    
+    with open(save_path, 'wb') as f:
+        with tqdm(total=total_size, unit='B', unit_scale=True, desc=os.path.basename(save_path)) as pbar:
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+                    pbar.update(len(chunk))
+    return save_path
+
+# Step 1: Download the LLaVA dataset JSON file
+json_path = 'llava_instruct_150k.json'
+if not os.path.exists(json_path):
+    json_url = "https://huggingface.co/datasets/liuhaotian/LLaVA-Instruct-150K/resolve/main/llava_instruct_150k.json"
+    download_file(json_url, json_path)
+
+# Step 2: Download COCO images if not already downloaded
+coco_zip_path = 'train2017.zip'
+images_dir = 'images'
+os.makedirs(images_dir, exist_ok=True)
+
+# Only download if the directory is empty
+if not os.listdir(images_dir):
+    if not os.path.exists(coco_zip_path):
+        images_url = "http://images.cocodataset.org/zips/train2017.zip"
+        download_file(images_url, coco_zip_path)
+    
+    print("Extracting images...")
+    with zipfile.ZipFile(coco_zip_path, 'r') as zip_ref:
+        zip_ref.extractall('.')
+    
+    # Move images to the images directory
+    print("Organizing files...")
+    os.makedirs(images_dir, exist_ok=True)
+    for img in tqdm(os.listdir('train2017'), desc="Moving images"):
+        shutil.move(os.path.join('train2017', img), os.path.join(images_dir, img))
+    
+    # Clean up extraction directory
+    if os.path.exists('train2017'):
+        os.rmdir('train2017')
+        
+print("Loading the LLaVA dataset from JSON...")
+# Load the dataset
+with open(json_path, 'r') as f:
+    dataset = json.load(f)
+
+# Select a subset for our fine-tuning task
+# We want 1200 examples total (1000 train, 100 val, 100 test)
+dataset = dataset[:1200]
+
+# Process and organize the data
+dataset_list = []
+successful_copies = 0
+failed_copies = 0
+
+print("Processing images...")
+for example in tqdm(dataset, desc="Processing dataset"):
+    if successful_copies >= 1200:
+        break
+    
+    # Determine if this is for train, val, or test
+    if successful_copies < 1000:
+        subset = 'train'
+    elif successful_copies < 1100:
+        subset = 'val'
+    else:
+        subset = 'test'
+    
+    # Get image filename from the example
+    if "image" in example:
+        image_path = example["image"]
+        image_filename = os.path.basename(image_path)
+        
+        # Source and destination paths
+        source_path = os.path.join(images_dir, image_filename)
+        dest_path = f"llava_images/{subset}/{image_filename}"
+        
+        # Copy the image if it exists
+        if os.path.exists(source_path):
+            shutil.copy2(source_path, dest_path)
+            
+            # Update example with local path
+            example_copy = dict(example)
+            example_copy['image_path'] = dest_path
+            dataset_list.append(example_copy)
+            successful_copies += 1
+        else:
+            failed_copies += 1
+
+print(f"\nProcessing complete:")
+print(f"Successful copies: {successful_copies}")
+print(f"Failed copies: {failed_copies}")
+
+# Split into train, validation, and test sets
+train_data = dataset_list[:1000]
+val_data = dataset_list[1000:1100]
+test_data = dataset_list[1100:]
+
+print(f"\nNumber of training examples: {len(train_data)}")
+print(f"Number of validation examples: {len(val_data)}")
+print(f"Number of test examples: {len(test_data)}")
+```
+
+## Upload Images to S3
+
+Now, let's upload the downloaded images to S3:
+
+```python
+def upload_images_to_s3(data_list, subset):
+    """Upload images to S3 and return paths"""
+    print(f"Uploading {subset} images to S3...")
+    
+    s3_paths = []
+    
+    for i, example in enumerate(tqdm(data_list)):
+        try:
+            # Get local image path
+            local_path = example['image_path']
+            
+            # Create S3 key
+            file_name = os.path.basename(local_path)
+            s3_key = f"images/{subset}/{file_name}"
+            
+            # Upload to S3
+            s3_client.upload_file(local_path, bucket_name, s3_key)
+            
+            # Store S3 path
+            s3_uri = f"s3://{bucket_name}/{s3_key}"
+            s3_paths.append({
+                'local_path': local_path,
+                's3_uri': s3_uri,
+                'example': example
+            })
+            
+        except Exception as e:
+            print(f"Error uploading image {i}: {e}")
+    
+    return s3_paths
+
+# Upload images to S3
+train_s3_paths = upload_images_to_s3(train_data, 'train')
+val_s3_paths = upload_images_to_s3(val_data, 'val')
+test_s3_paths = upload_images_to_s3(test_data, 'test')
+
+print(f"Uploaded {len(train_s3_paths)} training images")
+print(f"Uploaded {len(val_s3_paths)} validation images")
+print(f"Uploaded {len(test_s3_paths)} test images")
+```
+
+## Format Data for Fine-tuning
+
+Let's prepare the data in the required format for Bedrock Llama 3.2 fine-tuning:
+
+```python
+def create_jsonl_entry(example, s3_uri):
+    """Create a JSONL entry in the Bedrock conversation schema format"""
+    
+    # Extract conversation components
+    conversations = example.get('conversations', [])
+    
+    if len(conversations) >= 2:
+        question = conversations[0].get('value', "What's in this image?")
+        answer = conversations[1].get('value', "This is an image.")
+    else:
+        question = "What's in this image?"
+        answer = "This is an image."
+    
+    # Create entry in the required format
+    return {
+        "schemaVersion": "bedrock-conversation-2024",
+        "system": [
+            {
+                "text": "You are a helpful assistant that can answer questions about images accurately and concisely."
+            }
+        ],
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "text": question
+                    },
+                    {
+                        "image": {
+                            "format": "png",
+                            "source": {
+                                "s3Location": {
+                                    "uri": s3_uri,
+                                    "bucketOwner": account_id
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "role": "assistant",
+                "content": [
+                    {
+                        "text": answer
+                    }
+                ]
+            }
+        ]
+    }
+
+def prepare_dataset_jsonl(s3_paths, output_file):
+    """Prepare dataset in JSONL format for fine-tuning"""
+    
+    with open(output_file, 'w') as f:
+        for item in s3_paths:
+            # Create JSONL entry
+            entry = create_jsonl_entry(item['example'], item['s3_uri'])
+            
+            # Write to file
+            f.write(json.dumps(entry) + '\n')
+    
+    print(f"Created {output_file} with {len(s3_paths)} samples")
+
+# Prepare JSONL files
+prepare_dataset_jsonl(train_s3_paths, 'train.jsonl')
+prepare_dataset_jsonl(val_s3_paths, 'validation.jsonl')
+prepare_dataset_jsonl(test_s3_paths, 'test.jsonl')
+```
+
+## Upload JSONL Files to S3
+
+Let's upload our prepared JSONL files to S3:
+
+```python
+# Upload JSONL files to S3
+s3_client.upload_file('train.jsonl', bucket_name, 'data/train.jsonl')
+s3_client.upload_file('validation.jsonl', bucket_name, 'data/validation.jsonl')
+s3_client.upload_file('test.jsonl', bucket_name, 'data/test.jsonl')
+
+# Store S3 URIs for later use
+train_data_uri = f"s3://{bucket_name}/data/train.jsonl"
+validation_data_uri = f"s3://{bucket_name}/data/validation.jsonl"
+test_data_uri = f"s3://{bucket_name}/data/test.jsonl"
+
+print(f"Training data URI: {train_data_uri}")
+print(f"Validation data URI: {validation_data_uri}")
+print(f"Test data URI: {test_data_uri}")
+```
+
+## Create IAM Role for Model Fine-tuning
+Let's create an IAM role that will be used for the fine-tuning job:
+
+```python
+# Generate policy documents
+trust_policy_doc = {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "bedrock.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole",
+            "Condition": {
+                "StringEquals": {
+                    "aws:SourceAccount": account_id
+                },
+                "ArnLike": {
+                    "aws:SourceArn": f"arn:aws:bedrock:{region}:{account_id}:model-customization-job/*"
+                }
+            }
+        }
+    ]
+}
+
+access_policy_doc = {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:ListBucket",
+                "s3:GetBucketLocation"
+            ],
+            "Resource": [
+                f"arn:aws:s3:::{bucket_name}",
+                f"arn:aws:s3:::{bucket_name}/*"
+            ]
+        }
+    ]
+}
+
+
+# Create IAM client
+iam = session.client('iam')
+
+# Role name for fine-tuning
+role_name = f"Llama32VisionFineTuningRole-{int(time.time())}"
+policy_name = f"Llama32VisionFineTuningPolicy-{int(time.time())}"
+
+# Create role
+try:
+    response = iam.create_role(
+        RoleName=role_name,
+        AssumeRolePolicyDocument=json.dumps(trust_policy_doc),
+        Description="Role for fine-tuning Llama 3.2 vision model with Amazon Bedrock"
+    )
+    
+    role_arn = response["Role"]["Arn"]
+    print(f"Created role: {role_arn}")
+    
+    # Create policy
+    response = iam.create_policy(
+        PolicyName=policy_name,
+        PolicyDocument=json.dumps(access_policy_doc)
+    )
+    
+    policy_arn = response["Policy"]["Arn"]
+    print(f"Created policy: {policy_arn}")
+    
+    # Attach policy to role
+    iam.attach_role_policy(
+        RoleName=role_name,
+        PolicyArn=policy_arn
+    )
+    
+    print(f"Attached policy to role")
+    
+except Exception as e:
+    print(f"Error creating IAM resources: {e}")
+
+# Allow time for IAM role propagation
+print("Waiting for IAM role to propagate...")
+time.sleep(10)
+
+```
+
+## Save Variables for the Next Notebook
+Let's save the important variables we'll need in the next notebook:
+
+```python
+# Store variables for the next notebook
+%store bucket_name
+%store train_data_uri
+%store validation_data_uri
+%store test_data_uri
+%store role_arn
+%store role_name
+%store policy_arn
+
+print("Variables saved for use in the next notebook")
+```
+
+## Conclusion
+
+In this notebook, we prepared the data needed for fine-tuning a Llama 3.2 multi-modal model. We:
+
+- Downloaded a subset of the llava-instruct dataset with COCO images
+- Uploaded images to S3
+- Formatted the data according to the Bedrock conversation schema
+- Created an IAM role with the necessary permissions
+
+The data is now ready for fine-tuning, which we'll perform in the next notebook.
+
+### 02_fine-tune_llama3.2.ipynb
+
+# Fine-tuning Llama 3.2 with Vision Capabilities - Model Training and Inference
+
+## Introduction
+
+In this notebook, we'll use the data prepared in the previous notebook to fine-tune a Llama 3.2 multi-modal model using Amazon Bedrock. After fine-tuning, we'll test the model's performance using the test dataset.
+
+## Setup
+
+First, let's install and import the necessary libraries:
+
+```python
+# Install required libraries
+%pip install --upgrade pip
+%pip install boto3 pillow tqdm matplotlib --upgrade --quiet
+```
+
+```python
+# Restart kernel to ensure updated packages take effect
+from IPython.core.display import HTML
+HTML("<script>Jupyter.notebook.kernel.restart()</script>")
+```
+
+```python
+import boto3
+import os
+import json
+import time
+import base64
+import io
+import matplotlib.pyplot as plt
+from PIL import Image
+from tqdm.notebook import tqdm
+import warnings
+warnings.filterwarnings('ignore')
+```
+
+```python
+# Set AWS region
+region = "us-west-2"  # Llama 3.2 fine-tuning is only available in us-west-2
+
+# Create AWS clients
+session = boto3.session.Session(region_name=region)
+s3_client = session.client('s3')
+bedrock = session.client(service_name="bedrock", region_name=region)
+bedrock_runtime = session.client(service_name="bedrock-runtime", region_name=region)
+```
+
+```python
+# Retrieve stored variables from previous notebook
+%store -r bucket_name
+%store -r train_data_uri
+%store -r validation_data_uri
+%store -r test_data_uri
+%store -r role_arn
+%store -r role_name
+%store -r policy_arn
+
+print(f"Bucket name: {bucket_name}")
+print(f"Training data URI: {train_data_uri}")
+print(f"Validation data URI: {validation_data_uri}")
+print(f"Role ARN: {role_arn}")
+```
+
+## Create Fine-tuning Job
+
+Now, we'll create a fine-tuning job for the Llama 3.2 multi-modal model:
+
+```python
+# Generate a timestamp for unique naming
+timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
+
+# Define job parameters
+job_name = f"llama32-multimodal-ft-{timestamp}"
+custom_model_name = f"llama32-multimodel-{timestamp}"
+base_model_id = "meta.llama3-2-90b-instruct-v1:0:128k"  # Llama 3.2 vision model ID
+
+# Define hyperparameters
+hyperparameters = {
+    "epochCount": "2",       # Number of training epochs
+    "batchSize": "1",        # Batch size for training
+    "learningRate": "0.00001"  # Learning rate
+}
+
+# Define output location
+output_s3_uri = f"s3://{bucket_name}/output/"
+
+# Create validation data config
+validation_data_config = {
+    "validators": [{
+        "s3Uri": validation_data_uri
+    }]
+}
+```
+
+```python
+# Create fine-tuning job
+try:
+    response = bedrock.create_model_customization_job(
+        customizationType="FINE_TUNING",
+        jobName=job_name,
+        customModelName=custom_model_name,
+        roleArn=role_arn,
+        baseModelIdentifier=base_model_id,
+        hyperParameters=hyperparameters,
+        trainingDataConfig={"s3Uri": train_data_uri},
+        validationDataConfig=validation_data_config,
+        outputDataConfig={"s3Uri": output_s3_uri}
+    )
+    
+    # Get job identifier
+    job_arn = response["jobArn"]
+    print(f"Fine-tuning job created: {job_arn}")
+    
+except Exception as e:
+    print(f"Error creating fine-tuning job: {e}")
+```
+
+## Monitor Job Status
+
+Let's monitor the status of our fine-tuning job:
+
+<div style="
+    background-color: #fcf8e3; 
+    color: #8a6d3b;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #faebcc;
+    border-radius: 4px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+    <span style="font-weight:bold;">⚠️ Warning:</span> 
+    <p>Fine-tuning jobs for Llama 3.2 multi-modal models may take <b>several hours to complete</b>. 
+    The exact duration depends on your dataset size, model parameters, and current training resource availability.</p>
+</div>
+
+```python
+# Function to check job status
+def check_job_status(job_arn):
+    response = bedrock.get_model_customization_job(jobIdentifier=job_arn)
+    return response["status"]
+
+# Get current job status
+current_status = check_job_status(job_arn)
+print(f"Current job status: {current_status}")
+
+# If job completed successfully, get the model details
+if current_status == "Completed":
+    model_details = bedrock.get_model_customization_job(jobIdentifier=job_arn)
+    custom_model_arn = model_details["outputModelArn"]
+    print(f"Fine-tuned model ARN: {custom_model_arn}")
+```
+
+<div style="
+    background-color: #fcf8e3; 
+    color: #8a6d3b;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #faebcc;
+    border-radius: 4px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+    <span style="font-weight:bold;">⚠️ Warning:</span> 
+    <p>Please ensure the status is <b>"Completed"</b> before proceeding with the following cells. 
+    You can re-run the status check cell above to update this status.</p>
+</div>
+
+## Visualize Training Metrics
+
+Let's download and visualize the training metrics:
+
+```python
+# Download training metrics from S3
+def download_metrics():
+    # Get the job ID from the ARN
+    job_id = job_arn.split('/')[-1]
+    
+    # Define file paths
+    train_metrics_s3_key = f"output/model-customization-job-{job_id}/training_artifacts/step_wise_training_metrics.csv"
+    
+    local_train_metrics = "train_metrics.csv"
+    
+    # Download files
+    try:
+        s3_client.download_file(bucket_name, train_metrics_s3_key, local_train_metrics)
+        
+        print("Metrics downloaded successfully")
+        return local_train_metrics
+        
+    except Exception as e:
+        print(f"Error downloading metrics: {e}")
+        return None, None
+```
+
+```python
+# Download metrics
+train_metrics_file = download_metrics()
+
+# Plot training and validation loss if metrics are available
+if train_metrics_file:
+    import pandas as pd
+    
+    # Load metrics
+    train_data = pd.read_csv(train_metrics_file)
+
+    # Calculate step-level training loss
+    train_metrics_epoch = train_data.groupby('step_number').mean()
+    
+    # Plot
+    plt.figure(figsize=(10, 6))
+    plt.plot(train_metrics_epoch.index, train_metrics_epoch.training_loss, label='Training')
+    plt.title('Training Loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Step')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+```
+
+## Create Provisioned Throughput
+
+To use the fine-tuned model for inference, we need to create provisioned throughput:
+
+```python
+# Generate a unique name for provisioned throughput
+provisioned_model_name = f"llama32-multi-model-prov-{timestamp}"
+
+# Create provisioned throughput
+try:
+    response = bedrock.create_provisioned_model_throughput(
+        modelId=custom_model_arn,
+        provisionedModelName=provisioned_model_name,
+        modelUnits=1  
+    )
+    
+    provisioned_model_arn = response["provisionedModelArn"]
+    print(f"Provisioned model created: {provisioned_model_arn}")
+    
+    # Monitor provisioning status
+    status = bedrock.get_provisioned_model_throughput(provisionedModelId=provisioned_model_arn)["status"]
+    print(f"Initial provisioning status: {status}")
+    
+    progress_bar = tqdm(desc="Provisioning model", bar_format="{desc}: {bar}")
+    
+    # Poll provisioning status
+    while status == "Creating":
+        time.sleep(60)  # Check every minute
+        status = bedrock.get_provisioned_model_throughput(provisionedModelId=provisioned_model_arn)["status"]
+        progress_bar.update(1)
+        progress_bar.set_description(f"Provisioning model (Status: {status})")
+    
+    progress_bar.close()
+    
+    # Final status
+    final_status = bedrock.get_provisioned_model_throughput(provisionedModelId=provisioned_model_arn)["status"]
+    print(f"Final provisioning status: {final_status}")
+    
+except Exception as e:
+    print(f"Error creating provisioned throughput: {e}")
+
+
+```
+
+## Test with Inference
+
+Now, let's test our fine-tuned model using the test dataset:
+
+```python
+# Function to convert S3 URI to local image path
+def s3_uri_to_local_path(s3_uri):
+    """Convert S3 URI to local file path"""
+    filename = s3_uri.split('/')[-1]
+    fileformat = filename.split('.')[-1]
+    docname = filename.split('.')[0]
+
+    if fileformat != "png":
+        img = Image.open(f"llava_images/test/{filename}")
+        img.save(f"llava_images/test/{docname}.png", optimize=True, compress_level=9)
+        return f"llava_images/test/{docname}.png"
+
+    return f"llava_images/test/{filename}"
+```
+
+```python
+# Function to run inference using Bedrock converse API
+def run_inference(image_path, question, model_id):
+    """Run inference using the converse API with local image"""
+    
+    # Read image as binary data directly
+    with open(image_path, "rb") as f:
+        image_bytes = f.read()
+
+    # Create message structure matching the example
+    message = {
+        "role": "user",
+        "content": [
+            {
+                "image": {
+                    "format": "png",  # Our images are jpg format
+                    "source": {
+                        "bytes": image_bytes  # Raw bytes, no base64 encoding
+                    }
+                }
+            },
+            {
+                "text": question
+            }
+        ]
+    }
+
+    inference_config = {"temperature": 0.01}
+    
+    # Call the converse API
+    response = bedrock_runtime.converse(
+        modelId=model_id,
+        messages=[message],
+        inferenceConfig=inference_config
+    )
+    
+    # Extract response text following the example
+    response_text = response["output"]["message"]["content"][0]["text"]
+    return response_text
+
+```
+
+```python
+# Load test samples from local file
+with open('test.jsonl', 'r') as f:
+    test_samples = [json.loads(line) for line in f.readlines()][:5]  # Get first 5 samples
+
+# Run inference on test samples
+for i, sample in enumerate(test_samples):
+    # Extract information
+    question = sample["messages"][0]["content"][0]["text"]
+    image_s3_uri = sample["messages"][0]["content"][1]["image"]["source"]["s3Location"]["uri"]
+    expected_answer = sample["messages"][1]["content"][0]["text"]
+    
+    # Convert S3 URI to local file path
+    local_image_path = s3_uri_to_local_path(image_s3_uri)
+    
+    print(f"\n=== Test Sample {i+1} ===")
+    print(f"Question: {question}")
+    print(f"Expected Answer: {expected_answer}")
+    
+    try:
+        # Run inference
+        model_response = run_inference(local_image_path, question, provisioned_model_arn)
+        print(f"Model Response: {model_response}")
+    except Exception as e:
+        print(f"Inference error: {e}")
+        # If the provisioned model ARN doesn't work, try using the regular model ID format
+        try:
+            # Try with a standard model ID format as shown in the example
+            model_response = run_inference(local_image_path, question, provisioned_model_arn)
+            print(f"Model Response (using standard model ID): {model_response}")
+        except Exception as e2:
+            print(f"Second attempt failed: {e2}")
+    
+    # Display the image
+    image = Image.open(local_image_path)
+    plt.figure(figsize=(6, 6))
+    plt.imshow(image)
+    plt.axis('off')
+    plt.title(f"Test Image {i+1}")
+    plt.show()
+```
+
+## Clean Up Resources
+
+Finally, let's clean up the resources we created:
+
+```python
+# Function to clean up resources
+def clean_up():
+    print("Cleaning up resources...")
+    
+    # Delete provisioned model throughput
+    try:
+        print("Deleting provisioned model throughput...")
+        bedrock.delete_provisioned_model_throughput(provisionedModelId=provisioned_model_arn)
+        print("Provisioned model throughput deleted")
+    except Exception as e:
+        print(f"Error deleting provisioned model throughput: {e}")
+    
+    # Clean up IAM resources
+    iam = session.client('iam')
+    try:
+        print("Detaching policy from role...")
+        iam.detach_role_policy(RoleName=role_name, PolicyArn=policy_arn)
+        
+        print("Deleting policy...")
+        iam.delete_policy(PolicyArn=policy_arn)
+        
+        print("Deleting role...")
+        iam.delete_role(RoleName=role_name)
+        
+        print("IAM resources cleaned up")
+    except Exception as e:
+        print(f"Error cleaning up IAM resources: {e}")
+    
+    # We're not deleting the S3 bucket here as you might want to keep your data and model
+    
+    print("Cleanup completed")
+```
+
+```python
+clean_up()
+```
+
+## Conclusion
+
+In this notebook, we successfully fine-tuned a Llama 3.2 multi-modal model using Amazon Bedrock. We:
+
+- Set up and launched a fine-tuning job with our prepared dataset
+- Monitored the job progress and visualized training metrics
+- Created provisioned throughput for the fine-tuned model
+- Tested the model's performance with inference on test samples
+- Cleaned up resources we no longer needed
+
+The fine-tuned model can now answer questions about images based on the patterns it learned from our training data. For real-world applications, you may want to use a larger and more diverse dataset tailored to your specific use case.
+
+### 01_setup.ipynb
+
+# Setup for running customization notebooks both for fine-tuning and continued pre-training using Amazon Bedrock
+
+In this notebook, we will create set of roles and an s3 bucket which will be used for other notebooks in this module. 
+
+> This notebook should work well with the **`Data Science 3.0`**, **`Python 3`**, and **`ml.c5.2xlarge`** kernel in SageMaker Studio
+
+## Prerequisites
+
+###  Custom job role
+The notebook allows you to either create a Bedrock role for running customization jobs in the **Create IAM customisation job role** section or you can skip this section and create Bedrock Service role for customization jobs following [instructions on managing permissions for customization jobs](https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-iam-role.html). If you want to using an existing custom job role please edit the variable **customization_role** and also ensure it has access to the S3 bucket which is created containing the dataset. 
+
+#### Create IAM Pre-requisites
+
+This notebook requires permissions to: 
+- create and delete Amazon IAM roles
+- create, update and delete Amazon S3 buckets 
+- access Amazon Bedrock 
+
+If you are running this notebook without an Admin role, make sure that your role include the following managed policies:
+- IAMFullAccess
+- AmazonS3FullAccess
+- AmazonBedrockFullAccess
+
+
+
+- You can also create a csustom model in the Bedrock console following the instructions [here](https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-console.html).
+
+## Setup
+Install and import all the needed libraries and dependencies to complete this notebook.
+
+<div class="alert alert-block alert-warning">
+<b>Warning:</b> Please ignore error messages related to pip's dependency resolver.
+</div>
+
+```python
+!pip install --upgrade pip
+%pip install --no-build-isolation --force-reinstall \
+    "boto3>=1.28.57" \
+    "awscli>=1.29.57" \
+    "botocore>=1.31.57"
+!pip install -qU --force-reinstall langchain typing_extensions pypdf urllib3==2.1.0
+!pip install -qU ipywidgets>=7,<8
+!pip install jsonlines
+!pip install datasets==2.15.0
+!pip install pandas==2.1.3
+!pip install matplotlib==3.8.2
+```
+
+```python
+# restart kernel for packages to take effect
+from IPython.core.display import HTML
+HTML("<script>Jupyter.notebook.kernel.restart()</script>")
+```
+
+```python
+import warnings
+warnings.filterwarnings('ignore')
+import json
+import os
+import sys
+import boto3 
+import time
+import pprint
+from datasets import load_dataset
+import random
+import jsonlines
+```
+
+```python
+session = boto3.session.Session()
+region = session.region_name
+sts_client = boto3.client('sts')
+account_id = sts_client.get_caller_identity()["Account"]
+s3_suffix = f"{region}-{account_id}"
+bucket_name = f"bedrock-customization-{s3_suffix}"
+s3_client = boto3.client('s3')
+bedrock = boto3.client(service_name="bedrock")
+bedrock_runtime = boto3.client(service_name="bedrock-runtime")
+iam = boto3.client('iam', region_name=region)
+```
+
+```python
+import uuid
+suffix = str(uuid.uuid4())
+role_name = "BedrockRole-" + suffix
+s3_bedrock_finetuning_access_policy="BedrockPolicy-" + suffix
+customization_role = f"arn:aws:iam::{account_id}:role/{role_name}"
+```
+
+## Testing boto3 connection
+We will list the foundation models to test the bot3 connection and make sure bedrock client has been successfully created. 
+
+```python
+for model in bedrock.list_foundation_models(
+    byCustomizationType="FINE_TUNING")["modelSummaries"]:
+    for key, value in model.items():
+        print(key, ":", value)
+    print("-----\n")
+```
+
+## Create s3 bucket
+In this step we will create a s3 bucket, which will be used to store data for fine-tuning and continued pre-training notebooks. 
+
+```python
+# Create S3 bucket for knowledge base data source
+s3bucket = s3_client.create_bucket(
+    Bucket=bucket_name,
+    ## Uncomment the following if you run into errors
+    # CreateBucketConfiguration={
+    #     'LocationConstraint':region,
+    # },
+)
+```
+
+## Creating role and policies required to run customization jobs with Amazon Bedrock
+
+This JSON object defines the trust relationship that allows the bedrock service to assume a role that will give it the ability to talk to other required AWS services. The conditions set restrict the assumption of the role to a specfic account ID and a specific component of the bedrock service (model_customization_jobs)
+
+```python
+ROLE_DOC = f"""{{
+    "Version": "2012-10-17",
+    "Statement": [
+        {{
+            "Effect": "Allow",
+            "Principal": {{
+                "Service": "bedrock.amazonaws.com"
+            }},
+            "Action": "sts:AssumeRole",
+            "Condition": {{
+                "StringEquals": {{
+                    "aws:SourceAccount": "{account_id}"
+                }},
+                "ArnEquals": {{
+                    "aws:SourceArn": "arn:aws:bedrock:{region}:{account_id}:model-customization-job/*"
+                }}
+            }}
+        }}
+    ]
+}}
+"""
+```
+
+This JSON object defines the permissions of the role we want bedrock to assume to allow access to the S3 bucket that we created that will hold our fine-tuning datasets and allow certain bucket and object manipulations.
+
+```python
+ACCESS_POLICY_DOC = f"""{{
+    "Version": "2012-10-17",
+    "Statement": [
+        {{
+            "Effect": "Allow",
+            "Action": [
+                "s3:AbortMultipartUpload",
+                "s3:DeleteObject",
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:GetBucketAcl",
+                "s3:GetBucketNotification",
+                "s3:ListBucket",
+                "s3:PutBucketNotification"
+            ],
+            "Resource": [
+                "arn:aws:s3:::{bucket_name}",
+                "arn:aws:s3:::{bucket_name}/*"
+            ]
+        }}
+    ]
+}}"""
+
+```
+
+```python
+response = iam.create_role(
+    RoleName=role_name,
+    AssumeRolePolicyDocument=ROLE_DOC,
+    Description="Role for Bedrock to access S3 for finetuning",
+)
+pprint.pp(response)
+```
+
+```python
+role_arn = response["Role"]["Arn"]
+pprint.pp(role_arn)
+```
+
+```python
+response = iam.create_policy(
+    PolicyName=s3_bedrock_finetuning_access_policy,
+    PolicyDocument=ACCESS_POLICY_DOC,
+)
+pprint.pp(response)
+```
+
+```python
+policy_arn = response["Policy"]["Arn"]
+pprint.pp(policy_arn)
+```
+
+```python
+iam.attach_role_policy(
+    RoleName=role_name,
+    PolicyArn=policy_arn,
+)
+```
+
+Setup for running other notebooks on fine-tuning and continued pre-training is complete. 
+
+## Prepare CNN news article dataset for fine-tuning job and evaluation
+The dataset that will be used is a collection of new articles from CNN and the associated highlights from that article. More information can be found at huggingface: https://huggingface.co/datasets/cnn_dailymail
+
+```python
+#Load cnn dataset from huggingface
+dataset = load_dataset("cnn_dailymail",'3.0.0')
+```
+
+View the structure of the dataset
+
+
+```python
+print(dataset)
+```
+
+Prepare the Fine-tuning Dataset
+In this example, we are using a .jsonl dataset following example format:
+
+{"prompt": "<prompt text>", "completion": "<expected generated text>"}
+
+
+The following is an example item for a question-answer task:{"prompt": "prompt is AWS", "completion": "it's Amazon Web Services"}
+
+See more guidance on how to [prepare your Bedrock fine-tuning dataset](https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-prereq.html).
+
+A common prompt structure for instruction fine-tuning includes a system prompt, an instruction,  and an input which provides additional context. Here we define the prompt header that will be added before each article and together will be the 'prompt' component of each datapoint.
+
+```python
+instruction='''Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+
+instruction:
+
+Summarize the news article provided below.
+
+input:
+
+'''
+```
+
+For the 'completion' component we will attach the word "response" and new lines together with the summary/highlights of the article. The transformation of each datapoint is performed with the code below
+
+```python
+datapoints_train=[]
+for dp in dataset['train']:
+    temp_dict={}
+    temp_dict['prompt']=instruction+dp['article']
+    temp_dict['completion']='response:\n\n'+dp['highlights']
+    datapoints_train.append(temp_dict)
+    
+```
+
+An example of a processed datapoint can be printed below
+
+```python
+print(datapoints_train[4]['prompt'])
+```
+
+The same processing is done for the validation and test sets as well.
+
+```python
+datapoints_valid=[]
+for dp in dataset['validation']:
+    temp_dict={}
+    temp_dict['prompt']=instruction+dp['article']
+    temp_dict['completion']='response:\n\n'+dp['highlights']
+    datapoints_valid.append(temp_dict)
+```
+
+```python
+datapoints_test=[]
+for dp in dataset['test']:
+    temp_dict={}
+    temp_dict['prompt']=instruction+dp['article']
+    temp_dict['completion']='response:\n\n'+dp['highlights']
+    datapoints_test.append(temp_dict)
+```
+
+ Here we define some helper functions to process our datapoints further by modifying the number of datapoints we want to include in each set and the max string length of the datapoints we want to include. The final function will convert our datasets into JSONL files.
+
+```python
+def dp_transform(data_points,num_dps,max_dp_length):
+    lines=[]
+    for dp in data_points:
+        if len(dp['prompt']+dp['completion'])<=max_dp_length:
+                lines.append(dp)
+    random.shuffle(lines)
+    lines=lines[:num_dps]
+    return lines
+    
+```
+
+```python
+def jsonl_converter(dataset,file_name):
+    print(file_name)
+    with jsonlines.open(file_name, 'w') as writer:
+        for line in dataset:
+            writer.write(line)
+```
+
+Process data partitions. Every LLM may have different input token limits and what string of characters represents a token is defined by a particular model's vocabulary. For simplicity, we have restricted each datapoint to be <=3,000 characters.
+
+```python
+train=dp_transform(datapoints_train,5000,3000)
+validation=dp_transform(datapoints_valid,999,3000)
+test=dp_transform(datapoints_test,10,3000)
+```
+
+### Create local directory for datasets
+Please note that your training dataset for fine-tuning cannot be greater than 10K records, and validation dataset has a maximum limit of 1K records.
+
+```python
+dataset_folder="fine-tuning-datasets"
+train_file_name="train-cnn-5K.jsonl"
+validation_file_name="validation-cnn-1K.jsonl"
+test_file_name="test-cnn-10.jsonl"
+!mkdir fine-tuning-datasets
+abs_path=os.path.abspath(dataset_folder)
+```
+
+Create JSONL format datasets for Bedrock fine-tuning job
+
+```python
+jsonl_converter(train,f'{abs_path}/{train_file_name}')
+jsonl_converter(validation,f'{abs_path}/{validation_file_name}')
+jsonl_converter(test,f'{abs_path}/{test_file_name}')
+```
+
+### Upload datasets to s3 bucket
+Uploading both training and test dataset. 
+We will use the training and validation datasets for fine-tuning the model. The test dataset will be used for evaluating the performance of the model on an unseen input.
+
+```python
+s3_client.upload_file(f'{abs_path}/{train_file_name}', bucket_name, f'fine-tuning-datasets/train/{train_file_name}')
+s3_client.upload_file(f'{abs_path}/{validation_file_name}', bucket_name, f'fine-tuning-datasets/validation/{validation_file_name}')
+s3_client.upload_file(f'{abs_path}/{test_file_name}', bucket_name, f'fine-tuning-datasets/test/{test_file_name}')
+```
+
+```python
+s3_train_uri=f's3://{bucket_name}/fine-tuning-datasets/train/{train_file_name}'
+s3_validation_uri=f's3://{bucket_name}/fine-tuning-datasets/validation/{validation_file_name}'
+s3_test_uri=f's3://{bucket_name}/fine-tuning-datasets/test/{test_file_name}'
+```
+
+## Storing variables to be used in other notebooks. 
+
+> Please make sure to use the same kernel as used for 00_setup.ipynb for other notebooks on fine-tuning and continued pre-training. 
+
+```python
+%store role_arn
+%store bucket_name
+%store role_name
+%store policy_arn
+%store s3_train_uri
+%store s3_validation_uri
+%store s3_test_uri
+```
+
+### We are now ready to create a fine-tuning job with Bedrock!
+
+```python
+
+```
+
+### 02_continued_pretraining_titan_text.ipynb
+
+# Continued Pre-training Foundation Models in Amazon Bedrock
+
+> *This notebook has been tested to work with the **`SageMaker Distribution 1.3`** kernel in SageMaker Studio*
+
+In this notebook, we will build the end-to-end workflow for continous pre-training and evaluating the Foundation Models (FMs) in Amazon Bedrock. 
+
+- Prerequisite: Before running this notebook, please make sure you have created Bedrock Service role for customization jobs following [instructions on managing permissions for customization jobs](https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-iam-role.html)
+- In this notebook we demonstrate using boto3 sdk for conintuous pre-training of the Amazon Titan Text model. You can also do this in the Bedrock console following the instructions [here](https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-console.html).
+
+<div class="alert alert-block alert-warning">
+<b>Warning:</b> This notebook will create provisioned throughput for testing the fine-tuned model. Therefore, please make sure to delete the provisioned throughput as mentioned in the last section of the notebook, otherwise you will be charged for it, even if you are not using it.
+</div>
+
+## Setup
+Install and import all the needed libraries and dependencies to complete this notebook.
+
+```python
+!pip install --upgrade pip
+!pip install -qU --force-reinstall boto3 langchain datasets typing_extensions pypdf
+```
+
+```python
+!pip install ipywidgets
+```
+
+```python
+!pip install jsonlines
+```
+
+```python
+%store -r role_arn
+%store -r bucket_name
+```
+
+```python
+import warnings
+import json
+import os
+import sys
+import boto3
+import logging
+from botocore.exceptions import ClientError
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.document_loaders import PyPDFLoader
+from urllib.request import urlretrieve
+warnings.filterwarnings('ignore')
+import random
+import jsonlines
+```
+
+## Check the available models in Amazon Bedrock
+Retrieve the modelId's available of base models for Continued Pre-training.
+
+```python
+bedrock = boto3.client(service_name="bedrock")
+boto3_session = boto3.session.Session()
+s3_client = boto3.client('s3')
+sts_client = boto3.client('sts')
+account_id = sts_client.get_caller_identity()["Account"]
+region_name = boto3_session.region_name
+s3_suffix = f"{region_name}-{account_id}"
+
+print("s3 bucket name: ", bucket_name)
+
+for model in bedrock.list_foundation_models(
+    byCustomizationType="CONTINUED_PRE_TRAINING")["modelSummaries"]:
+    print("-----------------------------------")
+    print("{} -- {}".format(model["providerName"], model["modelName"]))
+    print("-----------------------------------")
+    for key, value in model.items():
+        print(key, ":", value)
+    print("\n")
+```
+
+## Preparing a Continued Pre-training dataset
+
+To carry out Continued Pre-training on a text-to-text model, prepare a training and optional validation dataset by creating a JSONL file with multiple JSON lines. Because Continued Pre-training involves unlabeled data, each JSON line is a sample containing only an input field. Use 6 characters per token as an approximation for the number of tokens. The format is as follows.
+
+    {"input": "<input text>"}
+    
+    {"input": "<input text>"}
+    
+    {"input": "<input text>"}      
+
+The following is an example item that could be in the training data:
+    
+    {"input": "AWS stands for Amazon Web Services"}
+    
+See more guidance on how to [prepare your Bedrock continued pre-training dataset](https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-prereq.html). 
+
+Once your Continued Pre-training dataset is ready, upload it to Amazon S3 and save the s3Uri to be used for creating a Continued Pre-training job. 
+
+### Sample Dataset
+Create a dataset using a PDF file.
+Make sure that your dataset is propotional to the model. Since, the foundation models are big in size, continued pre-training will require bigger dataset. If you use a small dataset for example a PDF file with few pages, you will not be able to see significant difference in the model reponses.
+
+For this workshop, we are using [`aws-cli user guide`](#https://docs.aws.amazon.com/pdfs/cli/latest/userguide/aws-cli.pdf#cli-services-s3).
+
+
+#### Download the file
+
+<div class="alert alert-block alert-info">
+<b>Note:</b> Downloading the dataset will take about 20mins as dataset contains 5M rows and is 22.3 GB in size. However, for training the model we will only use a subset of the data.
+</div>
+
+```python
+!mkdir data
+url = 'https://docs.aws.amazon.com/pdfs/cli/latest/userguide/aws-cli.pdf'
+file_name = "./data/aws-cli.pdf"
+urlretrieve(url, file_name)
+```
+
+Please note the following [quotas for the continued pretraining](#https://docs.aws.amazon.com/bedrock/latest/userguide/quotas.html#model-customization-quotas) customization job. 
+
+<table>
+    <tr> <th>Description</th>	<th>Maximum (continued pre-training)</th>	<th>Adjustable</th> </tr>
+    <tr> <td>Sum of input and output tokens when batch size is 2 </td><td>4,096</td><td>No</td> </tr>
+    <tr> <td>Sum of input and output tokens when batch size is between 3 and 6</td><td>2,048</td><td>No</td> </tr>
+    <tr><td>Character quota per sample in dataset</td>	<td>Token quota x 6</td>	<td>No</td> </tr>
+    <tr><td>Training records in a dataset</td>	<td>100,000</td>	<td>Yes</td> </tr>
+<tr><td>Validation records in a dataset</td>	<td>1,000</td> <td>Yes</td>
+<tr><td>Training dataset file size</td><td>	10 GB</td> <td>Yes</td>
+<tr><td>Validation dataset file size</td>	<td>100 MB</td>	<td>Yes</td>
+</table>
+
+Based on the above quotas, we will first load the pdf file, chunk it based on the above quotas, and transform into the format as needed for continued pre-training job.  
+    
+    {"input": "<input text>"}
+
+#### Split the file text
+
+```python
+loader = PyPDFLoader(file_name)
+document = loader.load()
+```
+
+```python
+document[368].page_content
+```
+
+```python
+# - in our testing Character split works better with this PDF data set
+text_splitter = RecursiveCharacterTextSplitter(
+    # Set a really small chunk size, just to show.
+    chunk_size = 20000, # 4096 tokens * 6 chars per token = 24,576 
+    chunk_overlap = 2000, # overlap for continuity across chunks
+)
+
+docs = text_splitter.split_documents(document)
+```
+
+#### Create the dataset file
+
+```python
+contents = ""
+for doc in docs:
+    content = {"input": doc.page_content}
+    contents += (json.dumps(content) + "\n")
+```
+
+```python
+dataset_folder = "data"
+train_file_name = "aws-cli-dataset.jsonl"
+train_dataset_filename = f"./{dataset_folder}/{train_file_name}"
+
+with open(train_dataset_filename, "w") as file:
+    file.writelines(contents)
+    file.close()
+
+```
+
+#### Upload the file to your Amazon S3 bucket
+
+```python
+path = f'{dataset_folder}'
+folder_name = "continued-pretraining" #Your folder name
+# Upload data to s3
+s3_client = boto3.client("s3")
+s3_client.upload_file(f'{path}/{train_file_name}', bucket_name, f'{folder_name}/train/{train_file_name}')
+```
+
+```python
+s3_train_uri=f's3://{bucket_name}/{folder_name}/train/{train_file_name}'
+s3_train_uri
+```
+
+## Create the Continued Pre-training job
+Now you have the dataset prepared and uploaded it is time to launch a new Continued Pre-training job. Complete the following fields required for the create_model_customization_job() API call. 
+
+```python
+from datetime import datetime
+ts = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+
+# Select the foundation model you want to customize (you can find this from the "modelId" from listed foundation model list above)
+base_model_id = "amazon.titan-text-lite-v1:0:4k"
+
+# Select the "CONTINUED_PRE_TRAINING" customization type. 
+customization_type = "CONTINUED_PRE_TRAINING"
+
+# Specify the roleArn for your customization job
+customization_role = role_arn
+
+# Create a customization job name
+customization_job_name = f"cpt-titan-lite-books-{ts}"
+
+# Create a customized model name for your continued pre-trained model
+custom_model_name = f"cpt-titan-lite-books-{ts}"
+
+# Define the hyperparameters for continued pre-trained model
+hyper_parameters = {
+        "epochCount": "1",
+        "batchSize": "1",
+        "learningRate": "0.00005",
+    }
+
+
+# Specify your data path for training, validation(optional) and output
+training_data_config = {"s3Uri": s3_train_uri}
+
+'''
+# REMOVE COMMENT IF YOU WANT TO USE A VALIDATION DATASET
+validation_data_config = {
+         "validators": [{
+             # "name": "validation",
+             "s3Uri": s3_validation_uri
+         }]
+     }
+'''
+
+output_data_config = {"s3Uri": "s3://{}/{}/output/".format(bucket_name, folder_name)}
+
+# Create the customization job
+bedrock.create_model_customization_job(
+    customizationType=customization_type,
+    jobName=customization_job_name,
+    customModelName=custom_model_name,
+    roleArn=customization_role,
+    baseModelIdentifier=base_model_id,
+    hyperParameters=hyper_parameters,
+    trainingDataConfig=training_data_config,
+    # validationDataConfig=validation_data_config,
+    outputDataConfig=output_data_config
+)
+```
+
+## Check Customization Job Status
+Continued Pre-training a model will require some time. The following code will help you get the status of the training job. 
+
+```python
+training_job_status = bedrock.get_model_customization_job(jobIdentifier=customization_job_name)["status"]
+```
+
+```python
+import time
+
+while training_job_status == "InProgress":
+    time.sleep(60)
+    fine_tune_job = bedrock.get_model_customization_job(jobIdentifier=customization_job_name)["status"]
+    print (training_job_status)
+```
+
+## Retrieve your customized model 
+Once the customization job is Fisnihed, you can check your existing custom model(s) and retrieve the modelArn of your continually pre-trained model.
+
+```python
+# List your custom models
+bedrock.list_custom_models()
+```
+
+```python
+custom_model_arn = bedrock.get_custom_model(modelIdentifier=custom_model_name)['modelArn']
+custom_model_arn
+```
+
+## Compare the customization output
+Provision the customized model and compare the answer against the base model to evaluate the improvement
+
+#### Provision the customized model
+
+```python
+bedrock_runtime = boto3.client(service_name="bedrock-runtime")
+```
+
+```python
+import boto3
+boto3.client(service_name='bedrock')
+provisioned_model_id = bedrock.create_provisioned_model_throughput(
+ modelUnits=1,
+ provisionedModelName='custom_model_name', 
+ modelId=bedrock.get_custom_model(modelIdentifier=custom_model_name)['modelArn']
+)['provisionedModelArn']        
+```
+
+```python
+status_provisioning = bedrock.get_provisioned_model_throughput(provisionedModelId = provisioned_model_id)['status']
+```
+
+```python
+import time
+while status_provisioning == 'Creating':
+    time.sleep(60)
+    status_provisioning = bedrock.get_provisioned_model_throughput(provisionedModelId=provisioned_model_id)['status']
+    print(status_provisioning)
+```
+
+#### Define models to compare
+
+```python
+provider = "Amazon"
+```
+
+```python
+for model in bedrock.list_foundation_models(
+    byProvider=provider)["modelSummaries"]:
+    print("-----------------------------------")
+    print("{} -- {}".format(model["providerName"], model["modelName"]))
+    print("-----------------------------------")
+    for key, value in model.items():
+        print(key, ":", value)
+    print("\n")
+```
+
+```python
+bedrock.list_provisioned_model_throughputs()
+```
+
+```python
+provisioned_model_arn=bedrock.list_provisioned_model_throughputs()["provisionedModelSummaries"][0]["provisionedModelArn"]
+```
+
+```python
+model_ids = [f"arn:aws:bedrock:{region_name}::foundation-model/amazon.titan-text-lite-v1", provisioned_model_arn] #Include your custom model and base models to test against
+```
+
+#### Compare outputs for all models
+
+```python
+def compare_model_outputs(model_ids, prompt):
+    for model in model_ids:
+        response = bedrock_runtime.invoke_model(
+            modelId=model,
+            body = json.dumps({
+                "inputText": prompt,
+                "textGenerationConfig": {
+                    "maxTokenCount": 300,
+                    "stopSequences": [],
+                    "temperature": 0,
+                    "topP": 0.3
+                }
+            })
+        )
+        response_body = json.loads(response.get("body").read())
+        print("-----------------------------------")
+        print(model)
+        print(response_body["results"][0]["outputText"])
+        print("-----------------------------------")
+```
+
+```python
+prompt = """
+Write aws-cli bash script to create a dynamoDB table. 
+Do not repeat answer.
+Do not add any preamble. 
+"""
+```
+
+```python
+compare_model_outputs(model_ids, prompt)
+```
+
+### Clean up resources
+
+```python
+bedrock.delete_provisioned_model_throughput(provisionedModelId=provisioned_model_id)
+```
+
+### 03_cleanup.ipynb
+
+## Clean up
+
+Its important to clean up all the resources, that you have created in the previous notebooks as there might be cost associated with the resources. 
+> *This notebook should work well with the **`Data Science 3.0`**, **`Python 3`**, and **`ml.t3.medium`** kernel in SageMaker Studio*
+
+
+## Retrieve resource names for deleting 
+
+```python
+%store -r bucket_name
+%store -r role_name
+%store -r role_arn
+%store -r policy_arn
+```
+
+```python
+print(bucket_name)
+print(role_name)
+print(role_arn)
+print(policy_arn)
+```
+
+```python
+import boto3
+session = boto3.session.Session()
+region = session.region_name
+s3_client = boto3.client('s3')
+iam = boto3.client('iam', region_name=region)
+```
+
+## Delete S3 bucket
+
+```python
+objects = s3_client.list_objects(Bucket=bucket_name)  
+if 'Contents' in objects:
+    for obj in objects['Contents']:
+        s3_client.delete_object(Bucket=bucket_name, Key=obj['Key']) 
+s3_client.delete_bucket(Bucket=bucket_name)
+```
+
+## Delete roles and policies
+
+```python
+iam.detach_role_policy(RoleName=role_name, PolicyArn=policy_arn)
+iam.delete_role(RoleName=role_name)
+```
+
+```python
+
+```
+
+
+
+# END OF PROMPT

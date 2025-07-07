@@ -1,0 +1,684 @@
+# Debug Log for 07_Cross_Region_Inference
+# Generated on: 2025-07-06 at 17:46:35
+# Prompt length: 28295 characters
+# Estimated token count: ~7073 tokens
+
+# FULL PROMPT:
+
+# Amazon Bedrock Workshop Module Analysis Prompt
+
+You are an expert technical tutor who specializes in breaking down complex implementation details into easily understandable explanations.
+
+## Task
+Analyze and document the codebase in the folder 07_Cross_Region_Inference and create a comprehensive summary.
+
+## Deliverables
+
+### Code Analysis
+- Thoroughly examine the implementation details, architecture patterns, and key components
+
+### Summary Document
+Create a well-structured file named SUMMARY-07_Cross_Region_Inference.md.md with the following sections:
+
+1. **Executive summary** (high-level overview)
+2. **Implementation details breakdown**
+3. **Key takeaways and lessons learned**
+4. **Technical architecture overview**
+5. **Recommendations or next steps** (if applicable)
+
+### Visual Documentation
+Include Mermaid diagrams where they add value:
+- Flowcharts for program logic
+- Sequence diagrams for user journeys (IMPORTANT: For any API interactions or request/response flows, include a sequence diagram showing the step-by-step process)
+- Architecture diagrams for system design
+- Class diagrams for object relationships
+- Choose the most appropriate diagram type for each context
+
+IMPORTANT: For modules involving APIs, always include at least one sequence diagram showing the request/response flow between components.
+
+### Additional Requirements
+- Use clear, jargon-free explanations suitable for intermediate developers
+- Provide code snippets with explanations where helpful
+- Highlight potential issues, optimizations, or best practices
+- Access the latest documentation using Context7 MCP when available
+
+## Output Format
+Markdown with proper headings, code blocks, and embedded Mermaid diagrams
+Place the generated report in my-analysis/SUMMARY-07_Cross_Region_Inference.md.md
+
+
+IMPORTANT: Start your response directly with the title '# SUMMARY-07_Cross_Region_Inference.md' (not abbreviated). Do not include any introductory text, preamble, or markdown tags before the title. Begin with the exact title and proceed with the analysis.
+
+# Folder Content to Analyze
+
+# Folder Content Summary for 07_Cross_Region_Inference
+
+## README Content
+
+# Scalable inference with Amazon Bedrock
+Amazon Bedrock provides easy access to leading foundation models from multiple model providers. Bedrock offers various inference mechanisms to consume these models. Following different types are available in Bedrock:
+* On-demand inference – The standard option for inference. Involves invoking a model in a specific AWS Region.
+* Cross-region inference – The opt-in feature allowing access to foundation models beyond a single region. It involves invoking an inference profile, an abstraction over foundation models deployed across a set of AWS Regions, to which it can route inference requests. It helps in increasing throughput and improves resiliency by dynamically routing requests (to the regions defined in the inference profile), depending on user traffic and demand.
+* Provisioned Throughput – The option to purchase dedicated compute. It involves purchasing a dedicated level of throughput for a model in a specific AWS Region. Provisioned Throughput quotas depend on the number of model units that you purchase.
+
+
+## Contents
+This folder contains examples to get you started with various inference patterns for Amazon Bedrock. Choose from the examples below to learn more:
+1. [Getting Started with Cross-region Inference](Getting_started_with_Cross-region_Inference.ipynb) - Introductory sample to help you understand how to use cross-region inference feature from Amazon Bedrock.
+
+
+## Contributing
+
+We welcome community contributions! Please ensure your sample aligns with AWS [best practices](https://aws.amazon.com/architecture/well-architected/), and please update the **Contents** section of this README file with a link to your sample, along with a description.
+
+
+## File Statistics
+
+Total files found: 2
+Notebooks: 1
+Python files: 0
+Markdown files: 1
+Other files: 0
+
+Important files selected based on patterns: 1
+
+## Files in the folder
+
+### Notebooks
+- Getting_started_with_Cross-region_Inference.ipynb
+
+### Markdown Files
+
+## Content of Key Files
+
+### Getting_started_with_Cross-region_Inference.ipynb
+
+# Getting started with Cross-region Inference in Amazon Bedrock
+
+Inference profiles via Amazon Bedrock allow you to perform cross-region inference without the need to setup anything in a fully-managed, secure and private manner. Inference profiles is a managed feature built on Amazon Bedrock, offering generative AI application builders a seamless solution for managing traffic bursts and ensuring optimal availability and performance. By leveraging this feature, builders no longer have to spend time and effort building complex resiliency structure. Instead, inference profiles intelligently routes traffic across multiple opted-in regions, automatically adapting to peak utilization surges. Any inferences carried out through inference profiles will dynamically utilize on-demand capacity available from any of the configured regions, maximizing availability and throughput.
+
+## Key Features & Benefits
+
+Some of the key features include:
+
+* Access to capacity in different regions allowing generative AI workloads to scale with demand.
+* Access to region-agnostic models to achieve higher throughput.
+* Become resilient to any traffic bursts.
+* Ability to select between the pre-defined region sets suiting application needs.
+* Compatible with existing APIs.
+* No additional cost.
+* Same model pricing as the source region.
+
+The end-user experience is not impacted as the model behind cross-region inference remains the same, and builders can focus on writing logic for a differentiated application. 
+
+Bedrock is the easiest way to build and scale generative AI applications. Cross region inference further enhances the usability.
+
+```python
+# Start by installing the dependencies to ensure we have a recent version
+#!pip install --quiet --upgrade --force-reinstall boto3 botocore awscli
+
+```
+
+#### Helper methods 
+
+1. To allow assume role capability if needed
+2. Leverage the profile set up for boto3 client
+
+```python
+import warnings
+
+from io import StringIO
+import sys
+import textwrap
+import os
+from typing import Optional
+
+# External Dependencies:
+import boto3
+from botocore.config import Config
+
+warnings.filterwarnings('ignore')
+
+def print_ww(*args, width: int = 100, **kwargs):
+    """Like print(), but wraps output to `width` characters (default 100)"""
+    buffer = StringIO()
+    try:
+        _stdout = sys.stdout
+        sys.stdout = buffer
+        print(*args, **kwargs)
+        output = buffer.getvalue()
+    finally:
+        sys.stdout = _stdout
+    for line in output.splitlines():
+        print("\n".join(textwrap.wrap(line, width=width)))
+        
+
+
+
+def get_boto_client(
+    assumed_role: Optional[str] = None,
+    region: Optional[str] = None,
+    runtime: Optional[bool] = True,
+    service_name: Optional[str] = None,
+):
+    """Create a boto3 client for Amazon Bedrock, with optional configuration overrides
+
+    Parameters
+    ----------
+    assumed_role :
+        Optional ARN of an AWS IAM role to assume for calling the Bedrock service. If not
+        specified, the current active credentials will be used.
+    region :
+        Optional name of the AWS Region in which the service should be called (e.g. "us-east-1").
+        If not specified, AWS_REGION or AWS_DEFAULT_REGION environment variable will be used.
+    runtime :
+        Optional choice of getting different client to perform operations with the Amazon Bedrock service.
+    """
+    if region is None:
+        target_region = os.environ.get("AWS_REGION", os.environ.get("AWS_DEFAULT_REGION"))
+    else:
+        target_region = region
+
+    print(f"Create new client\n  Using region: {target_region}")
+    session_kwargs = {"region_name": target_region}
+    client_kwargs = {**session_kwargs}
+
+    profile_name = os.environ.get("AWS_PROFILE")
+    if profile_name:
+        print(f"  Using profile: {profile_name}")
+        session_kwargs["profile_name"] = profile_name
+
+    retry_config = Config(
+        region_name=target_region,
+        retries={
+            "max_attempts": 10,
+            "mode": "standard",
+        },
+    )
+    session = boto3.Session(**session_kwargs)
+
+    if assumed_role:
+        print(f"  Using role: {assumed_role}", end='')
+        sts = session.client("sts")
+        response = sts.assume_role(
+            RoleArn=str(assumed_role),
+            RoleSessionName="langchain-llm-1"
+        )
+        print(" ... successful!")
+        client_kwargs["aws_access_key_id"] = response["Credentials"]["AccessKeyId"]
+        client_kwargs["aws_secret_access_key"] = response["Credentials"]["SecretAccessKey"]
+        client_kwargs["aws_session_token"] = response["Credentials"]["SessionToken"]
+
+    if not service_name:
+        if runtime:
+            service_name='bedrock-runtime'
+        else:
+            service_name='bedrock'
+
+    bedrock_client = session.client(
+        service_name=service_name,
+        config=retry_config,
+        **client_kwargs
+    )
+
+    print("boto3 Bedrock client successfully created!")
+    print(bedrock_client._endpoint)
+    return bedrock_client
+```
+
+```python
+import boto3
+print(boto3.__version__)
+
+os.environ["AWS_PROFILE"] = '<replace with your profile>'
+boto3_client =  get_boto_client(region='us-east-1', runtime=False) # switch to the region of your choice
+boto3_client.list_foundation_models()
+```
+
+🔴 IMPORTANT❗🔴
+
+*Note:* <span style="color:red">This notebook sample uses `us-east-1` region and the inference profiles available there as example.
+Change the `region_name` and inference profile ids in the cells below depending on which region you are in and which inference profiles are available.</span>
+
+```python
+# Make sure you have AWS credentials or AWS profile setup before running this cell
+
+#boto3_client =  get_bedrock_client(region='us-east-1', runtime=False)
+
+region_name = 'us-east-1' # switch to the region of your choice
+account_id = get_boto_client(service_name='sts', region=region_name).get_caller_identity().get('Account')
+bedrock_client = get_boto_client(service_name='bedrock', region=region_name)
+bedrock_runtime = get_boto_client(service_name='bedrock-runtime', region=region_name)
+
+print(account_id, bedrock_client, bedrock_client)
+```
+
+## Understand Inference Profiles
+
+The cross-region inference feature comes with two additional APIs in the Bedrock client SDK:
+
+* `list_inference_profiles()` -> This API tells you all the models that are configured behind Inference Profiles for you.
+* `get_inference_profile(inferenceProfileIdentifier)` -> This API give you specific details of a certain Inference Profile.
+
+```python
+bedrock_client.list_inference_profiles()['inferenceProfileSummaries']
+```
+
+It is important to note that cross-region inference offers two forms:
+
+**Foundation model in source region**
+
+In this mode a Inference Profile is only configured for a model which exists in the source region. For such model(s) a failover mechanism would exist allowing requests to be re-routed to fulfilment regions configured in Inference Profile. By default the request will go to source region resources and only if the region is busy or you hit your quota limit, the request is routed to another region. In order to determine, which region the request should go to Amazon Bedrock intelligently checks in real-time which region has redundant capacity available. The on-demand principle still applies if none of the region has capacity to handle the request, then it will be throttled.
+
+In this mode, If the source region doesn't have a certain model available, you will not be able to access it in a fulfilment region via cross-region inference feature.
+
+**Available via Inference Profiles**
+
+Select list of models are made available via cross-region inference, where Amazon Bedrock abstracts away the regional details and manages the hosting and inference routing automatically. Such foundation models then exist across the pre-defined region sets and the builder can build applications agnostic of setting up a region. This allows reliable throughput, access to leading foundation models as well as scalability in terms of throughput.
+
+```python
+bedrock_client.get_inference_profile(
+    inferenceProfileIdentifier='us.anthropic.claude-3-5-sonnet-20240620-v1:0'
+)
+```
+
+With the `get_inference_profile` API you can observe the `status` if a Inference Profile is `ACTIVE` or not and also which regions are configured for inference routing.
+
+## Use Inference Profiles
+
+An Inference Profile is used in the same way as a foundation model using the `modelId` or `arn` of the model. Inference profile also comes with it's own id and arn, where the difference is in the prefix. For the inference profile you can expect a regional prefix such as `us.` or `eu.` behind the model id for it to be recognized as an inference profile. Also in the `arn`, you can find the difference from `:<region>::foundation-model/<model-id>` to `:<region>::inference-profile/<region-set-prefix>.<model-id>`
+
+You can use both the `arn` and the `modelId` with `Converse` API whereas only the `modelId` with `InvokeModel` API
+
+### Converse API
+
+Amazon Bedrock now supports a unified messaging API for seamless application building experience. Read about all the models supported via this API [here](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html#conversation-inference-supported-models-features).
+
+Let's send a request to both the foundation model as well as the Inference Profile to observe change.
+
+```python
+from time import time
+system_prompt = "You are an expert on AWS services and always provide correct and concise answers."
+input_message = "Should I be storing documents in Amazon S3 or EFS for cost effective applications?"
+modelId = ('Foundation Model', 'anthropic.claude-3-haiku-20240307-v1:0')
+inferenceProfileId = ('Inference Profile', 'us.anthropic.claude-3-haiku-20240307-v1:0')
+
+for inference_type, id in [modelId, inferenceProfileId]:
+    start = time()
+    response = bedrock_runtime.converse(
+        modelId=id,
+        system=[{"text": system_prompt}],
+        messages=[{
+            "role": "user",
+            "content": [{"text": input_message}]
+        }]
+    )
+    end = time()
+    print(f"::{inference_type}::Response time: {int(end-start)} second(s)")
+    print(f"::model:id:{id}::Response time: {int(end-start)} second(s)")
+    print(f"::{inference_type}::Response output: {response['output']['message']['content']}")
+```
+
+You can observe that using the same API and only the change in model ID you can expect similar behavior.
+
+It is also possible to use a full ARN in place of the model ID:
+
+```python
+inference_profile_id = "us.anthropic.claude-3-sonnet-20240229-v1:0"
+inference_profile_arn = f"arn:aws:bedrock:{region_name}:{account_id}:inference-profile/{inference_profile_id}"
+print(inference_profile_arn)
+
+response = bedrock_runtime.converse(
+    modelId=inference_profile_arn,
+    system=[{"text": system_prompt}],
+    messages=[{
+        "role": "user",
+        "content": [{"text": input_message}]
+    }]
+)
+print(response['output']['message']['content'][0]['text'])
+```
+
+### InvokeModel API
+
+Most of the generative AI applications in production are already built on top of `InvokeModel` API, even the third-party tools also use this API for using the models. The cross-region inference feature is also compatible with this API. Where the Converse API only supports select models, all models available in Amazon Bedrock can leverage InvokeModel API.
+
+Let's send a request via both the foundation model id as well as the inference profile id to observe change via this API.
+
+```python
+import json
+body = json.dumps({
+    "anthropic_version": "bedrock-2023-05-31",
+    "max_tokens": 1024,
+    "temperature": 0.1,
+    "top_p": 0.9,
+    "system": system_prompt,
+    "messages": [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": f"{input_message}",
+                }
+            ]
+        }
+    ]
+})
+accept = 'application/json'
+contentType = 'application/json'
+modelId = ('Foundation Model', 'anthropic.claude-3-sonnet-20240229-v1:0')
+inferenceProfileId = ('Inference Profile', 'us.anthropic.claude-3-sonnet-20240229-v1:0')
+for inference_type, id in [modelId, inferenceProfileId]:
+    start = time()
+    response = bedrock_runtime.invoke_model(body=body, modelId=id, accept=accept, contentType=contentType)
+    end = time()
+    response_body = json.loads(response.get('body').read())
+    print(f"::{inference_type}::Response time: {int(end-start)} second(s)")
+    print(f"::{inference_type}::Response output: {response_body['content'][0]['text']}")
+```
+
+### LangChain
+
+Below you can find integration on how to use the new cross-region inference feature with one of the popular open-source frameworks [LangChain](https://python.langchain.com/v0.2/docs/integrations/platforms/aws/).
+
+```python
+!pip install --quiet langchain_aws langchain_community
+```
+
+[LangChain](https://python.langchain.com/v0.2/docs/introduction/) with the help of integrations implements [`langchain-aws`](https://github.com/langchain-ai/langchain-aws) which provides support  `Converse` API via [`ChatBedrockConverse`](https://python.langchain.com/v0.2/docs/integrations/chat/bedrock/#beta-bedrock-converse-api). This allows you to use the latest models such as Anthropic Claude 3 Sonnet via this implementation. Below you can see an example of that.
+
+```python
+from langchain_aws import ChatBedrockConverse
+
+messages = [
+    (
+        "system",
+        "You are a helpful assistant that shapes sentences into poetic form. Translate the user sentence.",
+    ),
+    ("human", "I love programming."),
+]
+
+llm = ChatBedrockConverse(
+    model='us.anthropic.claude-3-sonnet-20240229-v1:0',
+    temperature=0,
+    max_tokens=None,
+    client=bedrock_runtime,
+)
+
+print(llm.invoke(messages).content)
+```
+
+#### Use the ChatBedrock with Model id as the inference profile model id instead of the ARN
+
+**Option 1**
+
+1. We set the converse api flag to be true and that invokes the ChatBedrockConverse class which will invoke the model using the converse api class
+2. `Region` needs to be explictly passed in for this to work
+
+```python
+from langchain_aws import ChatBedrock
+
+messages = [
+    (
+        "system",
+        "You are a helpful assistant that shapes sentences into poetic form. Translate the user sentence.",
+    ),
+    ("human", "I love programming."),
+]
+model_parameter = {"temperature": 0.0, "top_p": .5, "max_tokens_to_sample": 200}
+llm = ChatBedrock(
+    model_id='us.anthropic.claude-3-sonnet-20240229-v1:0',
+    model_kwargs=model_parameter, 
+    beta_use_converse_api=True,  
+    client=bedrock_runtime,
+    region_name='us-east-1'
+)
+print(llm.invoke(messages).content)
+```
+
+### Use Model parameters
+
+Pass in the `Model inference parameters` at run time for model invocation
+
+```python
+from langchain_aws import ChatBedrock
+
+messages = [
+    (
+        "system",
+        "You are a helpful assistant that shapes sentences into poetic form. Generate a potery from this cue",
+    ),
+    ("human", "I love programming because......"),
+]
+#model_parameter = {"temperature": 0.1, "top_p": .5, "max_tokens": 1000  } #"max_tokens_to_sample": 200}
+llm = ChatBedrock(
+    model_id='us.anthropic.claude-3-sonnet-20240229-v1:0',
+    #model_kwargs=model_parameter,
+    beta_use_converse_api=True,
+    client=bedrock_runtime,
+    region_name='us-east-1'
+)
+# - these will take precedence even if we have similiar params when creating the class
+runtime_parameter = {"temperature": 0.9,  "max_tokens": 100 }
+print(llm.invoke(messages, **runtime_parameter).content)
+
+```
+
+### Streaming with LangChain
+
+Demostrate the streaming capabilities with LangChain. We also demonstrate that run time parameters take precedence. Say if you have temperature when creating the ChatBedrock class and also during the invocation, it will use the invocation values
+
+```python
+from langchain_aws import ChatBedrock
+
+messages = [
+    (
+        "system",
+        "You are a helpful assistant that shapes sentences into poetic form. Generate a potery from this cue",
+    ),
+    ("human", "I love programming because......"),
+]
+model_parameter = {"temperature": 0.1, "top_p": .5, "max_tokens": 1000  } #"max_tokens_to_sample": 200}
+llm = ChatBedrock(
+    model_id='us.anthropic.claude-3-sonnet-20240229-v1:0',
+    model_kwargs=model_parameter,
+    beta_use_converse_api=True,
+    client=bedrock_runtime,
+    region_name='us-east-1'
+)
+
+# These would take precedence 
+runtime_parameter = {"temperature": 0.9,  "max_tokens": 100 }
+response = llm.stream(messages, **runtime_parameter)
+
+# Extract and print the response text in real-time.
+for chunk in response:
+    if chunk and len(chunk.content) > 0:
+        sys.stdout.write(chunk.content[0].get('text',""))
+        sys.stdout.flush()
+
+```
+
+**Option 2 where we have the model provider**
+
+This does not use the converse api behind the scenes and calls the invoke api
+
+```python
+from langchain_aws import ChatBedrock
+
+messages = [
+    (
+        "system",
+        "You are a helpful assistant that shapes sentences into poetic form. Translate the user sentence.",
+    ),
+    ("human", "I love programming."),
+]
+
+model_parameter = {"temperature": 0.0, "top_p": .5}
+llm = ChatBedrock(
+    provider="anthropic",
+    model_id="us.anthropic.claude-3-haiku-20240307-v1:0",
+    model_kwargs=model_parameter, 
+    client=bedrock_runtime,
+)
+print(llm.invoke(messages).content)
+```
+
+#### Using the invoke and the prescribed message format for Claude models
+
+```python
+messages = json.dumps({
+    "anthropic_version": "bedrock-2023-05-31",
+    "max_tokens": 1024,
+    "temperature": 0.1,
+    "top_p": 0.9,
+    "system": 'You are a helpful assistant that shapes sentences into poetic form. Translate the user sentence.',
+    "messages": [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "I love programming.",
+                }
+            ]
+        }
+    ]
+})
+model_parameter = {"temperature": 0.0, "top_p": .5}
+llm = ChatBedrock(
+    provider="anthropic",
+    model_id="us.anthropic.claude-3-haiku-20240307-v1:0",
+    model_kwargs=model_parameter, 
+    client=bedrock_runtime,
+)
+print(llm.invoke(messages).content)
+```
+
+## Monitoring, Logging, and Metrics
+
+Using cross-region inference might route your request to a different region, based on the selected inference profile.
+
+If a request gets re-routed, the [Bedrock model invocation log](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html) will mention the used region in the `inferenceRegion` element of the JSON log entry.
+
+The below code snippet will enable the model invocation logging to a CloudWatch log group and then create a CloudWatch metric filter to select and count all model invocations that get routed to a fulfilment region. You can adapt this code to build a metric for a specific target region and to monitor latency based on region.
+
+This code snippet creates a new IAM role with appropriate permissions to enable the model invocation log delivered into CloudWatch Logs:
+
+```python
+import json
+
+# see https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html
+
+log_group_name = 'bedrock-model-invocation-logging'
+role_name = 'AmazonBedrockModelInvocationCWDeliveryRole'
+assume_role_policy_doc = {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "bedrock.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole",
+            "Condition": {
+                "StringEquals": {
+                    "aws:SourceAccount": account_id,
+                },
+                "ArnLike": {
+                    "aws:SourceArn": f"arn:aws:bedrock:{region_name}:{account_id}:*",
+                }
+            }
+        }
+    ]
+}
+iam_client = boto3.client('iam', region_name=region_name)
+try:
+    response = iam_client.create_role(
+        RoleName=role_name,
+        AssumeRolePolicyDocument=json.dumps(assume_role_policy_doc),
+    )
+except iam_client.exceptions.EntityAlreadyExistsException:
+    pass
+policy_doc = {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+            ],
+            "Resource": f"arn:aws:logs:{region_name}:{account_id}:log-group:{log_group_name}:log-stream:aws/bedrock/modelinvocations",
+        }
+    ]
+}
+iam_client.put_role_policy(
+    RoleName=role_name,
+    PolicyName=role_name,
+    PolicyDocument=json.dumps(policy_doc),
+)
+
+logs_client = boto3.client('logs', region_name=region_name)
+try:
+    logs_client.create_log_group(
+        logGroupName=log_group_name,
+    )
+except logs_client.exceptions.ResourceAlreadyExistsException:
+    pass
+logs_client.put_retention_policy(
+    logGroupName=log_group_name,
+    retentionInDays=365
+)
+
+response = bedrock_client.put_model_invocation_logging_configuration(
+    loggingConfig={
+        'cloudWatchConfig': {
+            'logGroupName': log_group_name,
+            'roleArn': f"arn:aws:iam::{account_id}:role/{role_name}",
+        },
+        'imageDataDeliveryEnabled': False,
+        'imageDataDeliveryEnabled': False,
+        'embeddingDataDeliveryEnabled': False,
+    }
+)
+```
+
+With the Model Invocation Log enabled and configured for CloudWatch Logs, you can now create a CloudWatch metric filter from the ingested JSON log entries by filtering for `inferenceRegion` to match / mis-match against your source or target region:
+
+```python
+logs_client.put_metric_filter(
+    logGroupName=log_group_name,
+    filterName='bedrock_cross_region_inference_rerouted',
+    filterPattern=f'{{ $.inferenceRegion != "{region_name}" }}',
+    metricTransformations=[
+        {
+            'metricNamespace': 'Custom',
+            'metricName': 'bedrock_cross_region_inference_rerouted',
+            'metricValue': '1',
+            'defaultValue': 0,
+            'unit': 'Count',
+        }
+    ]
+)
+```
+
+## Conclusion
+
+Cross-region inference provides the ability to manage bursts and spiky traffic patterns across a variety of generative AI workloads and disparate request shapes.With this feature you can easily scale your workloads in production without the need of heavy-lifting, lengthy migrations and overhead of infrastructure management. Amazon Bedrock handles the routing securely, reliably and in a transparent manner while giving you the control you need.
+
+### Key considerations
+While building or migrating applications to use of cross-region inference, it is important to keep in mind the following:
+- **Latency** - If your application is latency sensitive, it is advised to properly test the use of cross-region inference prior to fully relying on it since the routing to different regions could lead to higher latency numbers thus impacting your application behavior.
+- **Compliance** - Cross-region inference comes with pre-defined region sets, if these sets contain a region where you can't operate or goes against your policy, then it is advised not to use Inference Profiles, instead utilize Foundation Models directly.
+- **Determinism** - If you need to have control over where your requests are (or will be) re-routed (other than source region), it is better to consider just rely on Foundation Model directly. Also the model exclusive to cross-region inference exclusive models should be opted for carefully.
+- **Variety** - Inference Profiles do not provide access to multiple different models from different regions, it either acts as a failover mechanism for models in source region or provides Inference Profile exclusive models where the construct of a region is abstracted away. If your business demands to span across variety of foundation models from multiple regions, it is wise to consider building your own architecture via VPC Peering/Transit Gateway or other architectural patterns.
+
+### Cleanup
+
+If you ran the **Monitoring, Logging, and Metrics** code, consider disabling the Model Invocation Log to avoid incuring associated cost.
+
+
+
+# END OF PROMPT

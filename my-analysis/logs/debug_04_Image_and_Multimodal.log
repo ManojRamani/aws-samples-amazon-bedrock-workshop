@@ -1,0 +1,1472 @@
+# Debug Log for 04_Image_and_Multimodal
+# Generated on: 2025-07-06 at 17:43:57
+# Prompt length: 55023 characters
+# Estimated token count: ~13755 tokens
+
+# FULL PROMPT:
+
+# Amazon Bedrock Workshop Module Analysis Prompt
+
+You are an expert technical tutor who specializes in breaking down complex implementation details into easily understandable explanations.
+
+## Task
+Analyze and document the codebase in the folder 04_Image_and_Multimodal and create a comprehensive summary.
+
+## Deliverables
+
+### Code Analysis
+- Thoroughly examine the implementation details, architecture patterns, and key components
+
+### Summary Document
+Create a well-structured file named SUMMARY-04_Image_and_Multimodal.md.md with the following sections:
+
+1. **Executive summary** (high-level overview)
+2. **Implementation details breakdown**
+3. **Key takeaways and lessons learned**
+4. **Technical architecture overview**
+5. **Recommendations or next steps** (if applicable)
+
+### Visual Documentation
+Include Mermaid diagrams where they add value:
+- Flowcharts for program logic
+- Sequence diagrams for user journeys (IMPORTANT: For any API interactions or request/response flows, include a sequence diagram showing the step-by-step process)
+- Architecture diagrams for system design
+- Class diagrams for object relationships
+- Choose the most appropriate diagram type for each context
+
+IMPORTANT: For modules involving APIs, always include at least one sequence diagram showing the request/response flow between components.
+
+### Additional Requirements
+- Use clear, jargon-free explanations suitable for intermediate developers
+- Provide code snippets with explanations where helpful
+- Highlight potential issues, optimizations, or best practices
+- Access the latest documentation using Context7 MCP when available
+
+## Output Format
+Markdown with proper headings, code blocks, and embedded Mermaid diagrams
+Place the generated report in my-analysis/SUMMARY-04_Image_and_Multimodal.md.md
+
+
+IMPORTANT: Start your response directly with the title '# SUMMARY-04_Image_and_Multimodal.md' (not abbreviated). Do not include any introductory text, preamble, or markdown tags before the title. Begin with the exact title and proceed with the analysis.
+
+# Folder Content to Analyze
+
+# Folder Content Summary for 04_Image_and_Multimodal
+
+## README Content
+
+# Module 4 - Image Generation and Multimodal Embeddings
+
+## Overview
+
+Image generation can be a tedious task for artists, designers and content creators who illustrate their thoughts with the help of images. With the help of Foundation Models (FMs) this tedious task can be streamlined to just a single line of text that expresses the thoughts of the artist, FMs can be used for creating realistic and artistic images of various subjects, environments, and scenes from language prompts.
+
+Image indexing and searching is another tedious enterprise task. With the help of FMs, enterprise can build multimodal image indexing, searching and recommendation applications quickly. 
+
+In this lab, we will explore how to use FMs available in Amazon Bedrock to generate images as well as modify existing images, and how to use FMs to do multimodal image indexing and searching.
+
+
+## Prompt Engineering for Images
+
+Writing a good prompt can sometimes be an art. It is often difficult to predict whether a certain prompt will yield a satisfactory image with a given model. However, there are certain templates that have been observed to work. Broadly speaking, a prompt can be roughly broken down into three pieces: 
+
+* type of image (photograph/sketch/painting etc.), and
+* description (subject/object/environment/scene etc.), and
+* the style of the image (realistic/artistic/type of art etc.). 
+   
+You can change each of the three parts individually, to generate variations of an image. Adjectives have been known to play a significant role in the image generation process. Also, adding more details help in the generation process.To generate a realistic image, you can use phrases such as "a photo of", "a photograph of", "realistic" or "hyper realistic". 
+
+To generate images by artists you can use phrases like "by Pablo Picasso" or "oil painting by Rembrandt" or "landscape art by Frederic Edwin Church" or "pencil drawing by Albrecht Dürer". You can also combine different artists as well. To generate artistic image by category, you can add the art category in the prompt such as "lion on a beach, abstract". Some other categories include "oil painting", "pencil drawing", "pop art", "digital art", "anime", "cartoon", "futurism", "watercolor", "manga" etc. You can also include details such as lighting or camera lens, such as 35mm wide lens or 85mm wide lens and details about the framing (portrait/landscape/close up etc.).
+
+Note that the model generates different images even if same prompt is given multiple times. So, you can generate multiple images and select the image that suits your application best.
+
+## Foundation Models
+
+To provide these capabilities, Amazon Bedrock supports [Stable Diffusion XL](https://stability.ai/stablediffusion) from Stability AI and [Titan Image Generator](https://aws.amazon.com/bedrock/titan/) from Amazon for image generation, and [Titan Multimodal Embeddings](https://aws.amazon.com/bedrock/titan/) for multimodal image indexing and searching.
+
+### Stable Diffusion
+
+Stable Diffusion works on the principle of diffusion and is composed of multiple models each having different purpose:
+
+1. The CLIP text encoder;
+2. The VAE decoder;
+3. The UNet, and
+4. The VAE_post_quant_conv
+
+The workings can be explained with this architecture:
+![Stable Diffusion Architecture](./images/sd.png)
+
+### Titan Image Generator
+
+Titan Image Generator G1 is an image generation model. It generates images from text, and allows users to upload and edit an existing image. Users can edit an image with a text prompt (without a mask) or parts of an image with an image mask, or extend the boundaries of an image with outpainting. It can also generate variations of an image.
+
+### Titan Multimodal Embeddings
+
+Titan Multimodal Embeddings Generation 1 (G1) is a multimodal embeddings model for use cases like searching images by text, image, or a combination of text and image. Designed for high accuracy and fast responses, this model is an ideal choice for search and recommendations use cases.
+
+## Target Audience
+
+Marketing companies, agencies, web-designers, and general companies can take advantage of this feature to generate brand new images, from scratch.
+
+
+## File Statistics
+
+Total files found: 21
+Notebooks: 3
+Python files: 0
+Markdown files: 1
+Other files: 17
+
+Important files selected based on patterns: 2
+
+**Note: Only analyzing 4 out of 21 files due to size constraints.**
+
+## Files in the folder
+
+### Notebooks
+- 1_titan-multimodal-embeddings-lab.ipynb
+- 2_nova-canvas-lab.ipynb
+- 3_nova-reel-lab.ipynb
+
+### Markdown Files
+
+### Other Files
+- requirements.txt
+
+## Content of Key Files
+
+### 1_titan-multimodal-embeddings-lab.ipynb
+
+# Module 4 - Working with **Titan Multimodal Embeddings**
+
+---
+
+This notebook demonstrate how to generate and use embeddings for images and text using Amazon Titan Multimodal Embedding Models. We'll walk through how to extract these embeddings and perform similarity search with a query, laying out a path for building intelligent search and recommendation applications.
+
+---
+
+### Introduction
+
+Amazon Titan Multimodal Embedding Models provide a simple and scalable way to represent images and text as embeddings—dense numerical vectors that capture semantic meaning. These models are ideal for building intelligent systems where understanding the similarity between images, texts, or both is critical.
+
+Some key features of the Amazon Titan Multimodal Embedding Models include:
+
+- **Multi-modal input support** - Encode text, images, or a combination of both into the same semantic space.
+
+- **Enterprise-ready** - Built-in mechanisms to help mitigate bias in search results, support for multiple embedding dimensions for optimizing latency/accuracy trade-offs, and strong privacy and data security guarantees.
+
+- **Flexible deployment** - Available through real-time inference and asynchronous batch transform APIs, and easily integrated with vector databases such as **Amazon OpenSearch Service**.
+
+These models are pre-trained on large and diverse datasets, making them powerful out-of-the-box. For more specialized applications, you can also customize the embeddings using your own data, without needing to annotate large volumes of training examples.
+
+This module will guide you through using Amazon Titan’s multimodal embeddings to extract image and text embeddings, store them in an index, and build a simple semantic search demo. Let’s get started!
+
+### Pre-requisites
+
+Please make sure that you have enabled the following model access in _Amazon Bedrock Console_:
+- `Amazon Titan Multimodal Embeddings G1` (model ID: `amazon.titan-embed-image-v1`)
+- `Amazon Titan Image Generator G1 (V2)` (model ID: `amazon.titan-image-generator-v2:0`)
+
+## 1. Setup
+
+### 1.1 Install and import the required libraries
+
+```python
+%pip install -q -r requirements.txt
+```
+
+```python
+# Restart kernel
+from IPython.core.display import HTML
+HTML("<script>Jupyter.notebook.kernel.restart()</script>")
+```
+
+```python
+# Standard library imports
+import os
+import re
+import sys
+import json
+import base64
+from io import BytesIO
+
+# Other library imports
+import boto3
+import numpy as np
+import seaborn as sns
+from PIL import Image
+from scipy.spatial.distance import cdist
+
+# Print SDK versions
+print(f"Python version: {sys.version.split()[0]}")
+print(f"Boto3 SDK version: {boto3.__version__}")
+```
+
+```python
+# Init boto session
+boto3_session = boto3.session.Session()
+region_name = boto3_session.region_name
+
+# Init Bedrock Runtime client
+bedrock_client = boto3.client("bedrock-runtime", region_name)
+
+print("AWS Region:", region_name)
+```
+
+## 2. Synthetic Dataset
+
+### 2.1 Generating Textual Description of Dataset Items with LLM
+
+We can leverage Amazon Bedrock Language Models to randomly generate 7 different products, each with 3 variants, using prompt:
+
+```
+Generate a list of 7 items description for an online e-commerce shop, each comes with 3 variants of color or type. All with separate full sentence description.
+```
+
+Note that when using different language models, the reponses might be different. For illustration purpose, suppose we get the below response.
+
+```python
+response = 'Here is a list of 7 items with 3 variants each for an online e-commerce shop, with separate full sentence descriptions:\n\n1. T-shirt\n- A red cotton t-shirt with a crew neck and short sleeves. \n- A blue cotton t-shirt with a v-neck and short sleeves.\n- A black polyester t-shirt with a scoop neck and cap sleeves.\n\n2. Jeans\n- Classic blue relaxed fit denim jeans with a mid-rise waist. \n- Black skinny fit denim jeans with a high-rise waist and ripped details at the knees.  \n- Stonewash straight leg denim jeans with a standard waist and front pockets.\n\n3. Sneakers  \n- White leather low-top sneakers with an almond toe cap and thick rubber outsole.\n- Gray mesh high-top sneakers with neon green laces and a padded ankle collar. \n- Tan suede mid-top sneakers with a round toe and ivory rubber cupsole.  \n\n4. Backpack\n- A purple nylon backpack with padded shoulder straps, front zipper pocket and laptop sleeve.\n- A gray canvas backpack with brown leather trims, side water bottle pockets and drawstring top closure.  \n- A black leather backpack with multiple interior pockets, top carry handle and adjustable padded straps.\n\n5. Smartwatch\n- A silver stainless steel smartwatch with heart rate monitor, GPS tracker and sleep analysis.  \n- A space gray aluminum smartwatch with step counter, phone notifications and calendar syncing. \n- A rose gold smartwatch with activity tracking, music controls and customizable watch faces.  \n\n6. Coffee maker\n- A 12-cup programmable coffee maker in brushed steel with removable water tank and keep warm plate.  \n- A compact 5-cup single serve coffee maker in matt black with travel mug auto-dispensing feature.\n- A retro style stovetop percolator coffee pot in speckled enamel with stay-cool handle and glass knob lid.  \n\n7. Yoga mat \n- A teal 4mm thick yoga mat made of natural tree rubber with moisture-wicking microfiber top.\n- A purple 6mm thick yoga mat made of eco-friendly TPE material with integrated carrying strap. \n- A patterned 5mm thick yoga mat made of PVC-free material with towel cover included.'
+print(response)
+```
+
+The following function converts the response to a list of descriptions. You may need to write your own function depending on the real response.
+
+```python
+def extract_text(input_string):
+    pattern = r"- (.*?)($|\n)"
+    matches = re.findall(pattern, input_string)
+    extracted_texts = [match[0] for match in matches]
+    return extracted_texts
+```
+
+Convert the response to a list of product descriptions.
+
+```python
+product_descriptions = extract_text(response)
+product_descriptions
+```
+
+### 2.2 Generating Image Pairs for the Textual Descriptions
+
+The following function calls bedrock to generated images using "amazon.titan-image-generator-v1" model.
+
+```python
+def titan_generate_image(payload, num_image=2, cfg=10.0, seed=2024):
+
+    body = json.dumps(
+        {
+            **payload,
+            "imageGenerationConfig": {
+                "numberOfImages": num_image,   # Number of images to be generated. Range: 1 to 5 
+                "quality": "premium",          # Quality of generated images. Can be standard or premium.
+                "height": 1024,                # Height of output image(s)
+                "width": 1024,                 # Width of output image(s)
+                "cfgScale": cfg,               # Scale for classifier-free guidance. Range: 1.0 (exclusive) to 10.0
+                "seed": seed                   # The seed to use for re-producibility. Range: 0 to 214783647
+            }
+        }
+    )
+
+    response = bedrock_client.invoke_model(
+        body=body, 
+        modelId="amazon.titan-image-generator-v2:0",
+        accept="application/json", 
+        contentType="application/json"
+    )
+
+    response_body = json.loads(response.get("body").read())
+    images = [
+        Image.open(
+            BytesIO(base64.b64decode(base64_image))
+        ) for base64_image in response_body.get("images")
+    ]
+
+    return images
+```
+
+Then we leverage the Titan Image Generation models to create product images for each of the descriptions. The following cell may take a few minutes to run.
+
+```python
+embed_dir = "data/titan-embed"
+os.makedirs(embed_dir, exist_ok=True)
+
+titles = []
+for i, prompt in enumerate(product_descriptions, 1):
+    images = titan_generate_image(
+        {
+            "taskType": "TEXT_IMAGE",
+            "textToImageParams": {
+                "text": prompt, # Required
+            }
+        },
+        num_image=1
+    )
+    title = "_".join(prompt.split()[:4]).lower()
+    title = f"{embed_dir}/{title}.png"
+    titles.append(title)
+    images[0].save(title, format="png")
+    print(f"[{i}/{len(product_descriptions)}] Generated: '{title}'..")
+```
+
+## 3. Multimodal Dataset Indexing
+
+### 3.1 Embedding Images with Titan Multimodal Embeddings
+
+The following function converts image, and optionally, text, into multimodal embeddings.
+
+```python
+def titan_multimodal_embedding(
+    image_path=None,  # maximum 2048 x 2048 pixels
+    description=None, # English only and max input tokens 128
+    dimension=1024,   # 1024 (default), 384, 256
+    model_id="amazon.titan-embed-image-v1"
+):
+    payload_body = {}
+    embedding_config = {
+        "embeddingConfig": { 
+             "outputEmbeddingLength": dimension
+         }
+    }
+
+    # You can specify either text or image or both
+    if image_path:
+        with open(image_path, "rb") as image_file:
+            input_image = base64.b64encode(image_file.read()).decode('utf8')
+        payload_body["inputImage"] = input_image
+    if description:
+        payload_body["inputText"] = description
+
+    assert payload_body, "please provide either an image and/or a text description"
+    print("\n".join(payload_body.keys()))
+
+    response = bedrock_client.invoke_model(
+        body=json.dumps({**payload_body, **embedding_config}), 
+        modelId=model_id,
+        accept="application/json", 
+        contentType="application/json"
+    )
+
+    return json.loads(response.get("body").read())
+```
+
+Now we can create embeddings for the generated images:
+
+```python
+multimodal_embeddings = []
+for title in titles:
+    embedding = titan_multimodal_embedding(image_path=title, dimension=1024)["embedding"]
+    multimodal_embeddings.append(embedding)
+    print(f"generated embedding for {title}")
+```
+
+### 3.2 Analyze the Generated Image Embeddings
+
+Let's see what we have generated so far:
+
+```python
+print("Number of generated embeddings for images:", len(multimodal_embeddings))
+print("Dimension of each image embedding:", len(multimodal_embeddings[-1]))
+print("Example of generated embedding:\n", np.array(multimodal_embeddings[-1]))
+```
+
+The following function produces a heatmap to display the inner product of the embeddings.
+
+```python
+def plot_similarity_heatmap(embeddings_a, embeddings_b):
+    inner_product = np.inner(embeddings_a, embeddings_b)
+    sns.set(font_scale=1.1)
+    graph = sns.heatmap(
+        inner_product,
+        vmin=np.min(inner_product),
+        vmax=1,
+        cmap="OrRd",
+    )
+```
+
+Generate a heatmap to display the inner product of the embeddings. You can see that the diagonal is dark red, which means one embedding is closely related to itself. Then you can notice that there are 3X3 squares which are lighter than the diagonal, but darker than the rest. It means those 3 embeddings are less closely related to each other, than to itself, but more closely related to the rest embeddings. This makes sense, as we generated 3 variants of each product. Products are more closely related if they are of the same type. Products are less closely related if they are of different types.
+
+```python
+plot_similarity_heatmap(multimodal_embeddings, multimodal_embeddings)
+```
+
+## 4. Multimodal Search
+
+We can now showcase a basic functionality of a multimodal search engine.
+
+The following function returns the top similar multimodal embeddings given a query multimodal embedding. Note in practise you can leverage managed vector database, e.g. Amazon OpenSearch Service, and here is for illustration purpose.
+
+```python
+def search(query_emb:np.array, indexes:np.array, top_k:int=1):
+    dist = cdist(query_emb, indexes, metric="cosine")
+    return dist.argsort(axis=-1)[0,:top_k], np.sort(dist, axis=-1)[:top_k]
+```
+
+Now we have created the embeddings, we can search the list with a query, to find the product which the query best describes.
+
+```python
+query_prompt = "suede sneaker"
+query_emb = titan_multimodal_embedding(description=query_prompt, dimension=1024)["embedding"]
+len(query_emb)
+```
+
+```python
+idx_returned, dist = search(
+    np.array(query_emb)[None], 
+    np.array(multimodal_embeddings)
+)
+idx_returned, dist
+```
+
+```python
+for idx in idx_returned[:1]:
+    display(Image.open(f"{titles[idx]}"))
+```
+
+Let's convert the above cells to a helper function.
+
+```python
+def multimodal_search(description:str, dimension:int):
+    query_emb = titan_multimodal_embedding(description=description, dimension=dimension)["embedding"]
+
+    idx_returned, dist = search(
+        np.array(query_emb)[None], 
+        np.array(multimodal_embeddings)
+    )
+
+    for idx in idx_returned[:1]:
+        display(Image.open(f"{titles[idx]}"))
+```
+
+```python
+multimodal_search(description="white sneaker", dimension=1024)
+```
+
+```python
+multimodal_search(description="mesh sneaker", dimension=1024)
+```
+
+```python
+multimodal_search(description="leather backpack", dimension=1024)
+```
+
+```python
+multimodal_search(description="nylon backpack", dimension=1024)
+```
+
+```python
+multimodal_search(description="canvas backpack", dimension=1024)
+```
+
+```python
+multimodal_search(description="running shoes", dimension=1024)
+```
+
+## 5. Conclusions and Next Steps
+
+In this module, we explored how to work with multimodal embeddings using Amazon Titan models. By embedding images and text into a shared semantic space, we demonstrated how to build powerful similarity search capabilities that go beyond traditional keyword matching. This approach opens up a wide range of possibilities for intelligent search, recommendation, and classification systems across industries such as e-commerce, media, and enterprise content management.
+
+### Next Steps
+
+Now please go on to explore the powerful capabilities of the Amazon Nova Canvas model to create compelling visual imagery for use cases such as product prototyping, dynamic content generation, and marketing asset creation:
+
+&nbsp; **NEXT ▶** [2_nova-canvas-lab.ipynb](./2\_nova-canvas-lab.ipynb).
+
+### 2_nova-canvas-lab.ipynb
+
+# Module 4 - Exploring Image Generation with **Amazon Nova Canvas**
+
+---
+
+In this hands-on session, we'll explore the powerful capabilities of Amazon Nova Canvas to create compelling visual ads for Octank, a premium dog food company.
+
+---
+
+### Introduction
+In this notebook, you'll explore Amazon Nova Canvas, a state-of-the-art image generation model that creates high-quality, photorealistic visuals from text prompts. Nova Canvas supports advanced features such as text-to-image generation, inpainting, outpainting, image variation, and subject consistency. These capabilities make it a powerful tool for applications like product visualization, creative design, and content generation—enabling businesses to produce studio-quality images at scale, accelerate content workflows, and enhance customer experiences with highly tailored visuals.
+
+### Use Case
+Octank is launching a new dog food line and wants to create various visual assets:
+- Generate an initial product package design
+- Create variations of the package design, including a oil-painting style version
+- Design a special promotional package using specific brand colors
+- Produce a professional-looking ad with the product in a kitchen setting
+- Isolate the product image for use in various marketing materials
+
+### Lab Objectives
+By the end of this notebook lab, you will:
+- Understand the key features of Amazon Nova Canvas
+- Learn how to use these features for a real-world marketing scenario
+- Gain hands-on experience with the Amazon Bedrock API for image generation tasks
+
+## 1. Setup
+
+### 1.1 Import Libraries and Init Clients
+
+```python
+# Built-in libraries
+import base64
+import io
+import json
+import os
+import sys
+
+# External dependencies
+import boto3
+import botocore
+import numpy as np
+import matplotlib.pyplot as plt
+
+from PIL import Image
+
+# Set up Bedrock client
+boto3_bedrock = boto3.client('bedrock-runtime')
+```
+
+## 1.2 Implement Helper Functions
+
+The following ultilty function visualizes generated images alongside optional reference images. It's essential for displaying and comparing the results of image generation tasks, allowing you to easily see the input, output, and any relevant color information in a single, organized plot.
+
+```python
+# Utility function: Define plot function
+def plot_images(base_images, prompt=None, seed=None, ref_image_path=None, color_codes=None, original_title=None, processed_title=None):
+    if ref_image_path and color_codes:
+        fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+        num_subplots = 3
+    elif ref_image_path or color_codes:
+        fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+        num_subplots = 2
+    else:
+        fig, axes = plt.subplots(1, 1, figsize=(6, 5))
+        num_subplots = 1
+    
+    axes = np.array(axes).ravel() 
+    
+    current_subplot = 0
+    
+    if color_codes:
+        num_colors = len(color_codes)
+        color_width = 0.8 / num_colors
+        for i, color_code in enumerate(color_codes):
+            x = i * color_width
+            rect = plt.Rectangle((x, 0), color_width, 1, facecolor=f'{color_code}', edgecolor='white')
+            axes[current_subplot].add_patch(rect)
+        axes[current_subplot].set_xlim(0, 0.8)
+        axes[current_subplot].set_ylim(0, 1)
+        axes[current_subplot].set_title('Color Codes')
+        axes[current_subplot].axis('off')
+        current_subplot += 1
+    
+    if ref_image_path:
+        reference_image = Image.open(ref_image_path)
+        max_size = (512, 512)
+        reference_image.thumbnail(max_size)
+        axes[current_subplot].imshow(np.array(reference_image))
+        axes[current_subplot].set_title(original_title or 'Reference Image')
+        axes[current_subplot].axis('off')
+        current_subplot += 1
+    
+    axes[current_subplot].imshow(np.array(base_images[0]))
+    if processed_title:
+        axes[current_subplot].set_title(processed_title)
+    elif ref_image_path and seed is not None:
+        axes[current_subplot].set_title(f'Image Generated Based on Reference\nSeed: {seed}')
+    elif seed is not None:
+        axes[current_subplot].set_title(f'Image Generated\nSeed: {seed}')
+    else:
+        axes[current_subplot].set_title('Processed Image')
+    axes[current_subplot].axis('off')
+    
+    if prompt:
+        print(f"Prompt: {prompt}\n")
+    
+    plt.tight_layout()
+    plt.show()
+```
+
+```python
+def save_image(base64_image, output_file):
+    with open(output_file, 'wb') as file:
+        file.write(base64.b64decode(base64_image))
+```
+
+## 2. Use Cases Implementation
+
+### 2.1 Example: Text to Image
+
+
+#### Scenario
+Octank wants to generate an initial product package design based on a text description.
+
+#### Parameters
+1. **prompt**: Describes the desired image
+2. **negative_prompts**: Specifies elements to avoid in the image
+3. **seed**: For reproducibility
+
+
+```python
+# Define the prompt
+prompt = "A white packet of premium dog food with an American Eskimo dog on it, professional product photography. Dog food is named Octank."
+negative_prompts = "poorly rendered, poor background details, poor packet details, poor text details, bleary text"
+seed = 42
+
+# Specify path to store the output
+output_save_path = "images/after_text-to-image.png" 
+```
+
+```python
+# Generate text-to-image
+body = json.dumps(
+    {
+        "taskType": "TEXT_IMAGE",
+        "textToImageParams": {
+            "text": prompt,                    # Required
+            "negativeText": negative_prompts   # Optional
+        },
+        "imageGenerationConfig": {
+            "numberOfImages": 1,   # Range: 1 to 5 
+            "quality": "standard",  # Options: standard or premium
+            "height": 1024,        
+            "width": 1024,         
+            "cfgScale": 7.5,       # Range: 1.0 (exclusive) to 10.0
+            "seed": 250 #100            # Range: 0 to 214783647
+        }
+    }
+)
+
+response = boto3_bedrock.invoke_model(
+    body=body, 
+    modelId="amazon.nova-canvas-v1:0",
+    accept="application/json", 
+    contentType="application/json"
+)
+
+response_body = json.loads(response.get("body").read())
+response_images = [
+    Image.open(io.BytesIO(base64.b64decode(base64_image)))
+    for base64_image in response_body.get("images")
+]
+
+# save output
+save_image(response_body.get("images")[0], output_save_path)
+
+# Plot output
+plot_images(response_images, processed_title="Generated Product Package") 
+```
+
+### 2.2 Example: Image Conditioning
+
+#### Scenario
+Octank wants to create a oil-painting version of their package design while maintaining the overall layout.
+
+#### Parameters
+
+1. **prompt**: Describes the desired style
+2. **reference_image_path**: Path to the original package design
+3. **controlMode**: Specifies the conditioning mode (CANNY_EDGE or SEGMENTATION)
+
+```python
+# Define the prompt, reference image
+prompt = "a oil-painting dog food packet with a white american eskimo on the packet cover, dog food company name is Octank"
+reference_image_path = "images/after_text-to-image.png"
+seed = 42# Can be any random number between 0 to 214783647
+
+# Specify path to store the output
+output_save_path = "images/after_image_cartooning.png" 
+```
+
+```python
+# Encode the reference image
+with open(reference_image_path, "rb") as image_file:
+    reference_image_base64 = base64.b64encode(image_file.read()).decode("utf-8")
+    
+# Generate image condition on reference image
+body = json.dumps(
+    {
+        "taskType": "TEXT_IMAGE",
+        "textToImageParams": {
+            "text": prompt,  # Required
+            "conditionImage": reference_image_base64, # Optional
+            "controlMode": "CANNY_EDGE", # Optional: CANNY_EDGE | SEGMENTATION
+            "controlStrength": 0.7,  # Range: 0.2 to 1.0,
+        },
+        "imageGenerationConfig": {
+                "numberOfImages": 1,
+                "seed": seed,
+            }
+        
+    }
+)
+
+response = boto3_bedrock.invoke_model(
+    body=body, 
+    modelId="amazon.nova-canvas-v1:0",
+    accept="application/json", 
+    contentType="application/json"
+)
+
+response_body = json.loads(response.get("body").read())
+response_images = [
+    Image.open(io.BytesIO(base64.b64decode(base64_image)))
+    for base64_image in response_body.get("images")
+]
+
+save_image(response_body.get("images")[0], output_save_path)
+
+# plot output
+plot_images(response_images, ref_image_path = reference_image_path)
+```
+
+### 2.3 Example: Image Variation
+
+#### Scenario
+Generating images from text is powerful but, in some cases, you will want your model to understand the style from certain image and directly transfer it to your output image. Rather than starting from scratch, image variation features enables us to do style transfer easily.
+
+Now, Octank wants to have a dog food packet with the same style showing in the reference image, let's see how easy this step could be.
+
+#### Parameters
+
+1. **prompt**: Describes the desired output
+2. **reference_image_path**: Path to the reference style
+
+```python
+# Define the prompt, reference image
+prompt = "A white packet of premium dog food with an American Eskimo dog on it, professional product photography. Dog food is named Octank"
+negative_prompt = "bad quality, low resolution"
+reference_image_path = "images/sketch_dog.png"
+seed = 600 # Can be any random number between 0 to 214783647
+
+# Specify path to store the output
+output_save_path = "images/after_image_variation.png" 
+```
+
+```python
+# Encode the reference image
+with open(reference_image_path, "rb") as image_file:
+    reference_image_base64 = base64.b64encode(image_file.read()).decode("utf-8")
+
+body = json.dumps({
+     "taskType": "IMAGE_VARIATION",
+     "imageVariationParams": {
+         "text": prompt,              # Optional
+         "negativeText": negative_prompt,   # Optional
+         "images": [reference_image_base64],               # One image is required
+        #  "similarityStrength": 1.0
+     },
+     "imageGenerationConfig": {
+         "numberOfImages": 1,
+         "quality": "premium",
+         "height": 1024,
+         "width": 1024,
+         #"cfgScale": 10,
+         "seed": seed
+     }
+ })
+
+response = boto3_bedrock.invoke_model(
+    body=body, 
+    modelId="amazon.nova-canvas-v1:0",
+    accept="application/json", 
+    contentType="application/json"
+)
+
+response_body = json.loads(response.get("body").read())
+response_images = [
+    Image.open(io.BytesIO(base64.b64decode(base64_image)))
+    for base64_image in response_body.get("images")
+]
+
+save_image(response_body.get("images")[0], output_save_path)
+
+# plot output
+plot_images(response_images, ref_image_path = reference_image_path)
+```
+
+### 2.4 Example: Inpainting
+
+#### Scenario
+Octank has decided to refresh their product line by featuring different dog breeds on their packaging. However, they want to maintain consistency in the overall design and only change the dog image. This is where inpainting comes in handy. For this task, Octank wants to replace the American Eskimo dog on their current packaging with a Husky, while keeping the rest of the design intact.
+
+Let's use inpainting to help Octank update their packaging with a new dog breed.
+
+#### Parameters
+
+1. **prompt**: Describes the desired output
+2. **reference_image_path**: Path to the reference style
+3. **mask_prompt**: Describe the object to be replaced
+
+```python
+# Define the prompt and reference image
+prompt = "A white packet of premium dog food with Husky dog on it, professional product photography. Dog food is named Octank"
+negative_prompts = "bad quality, low res"
+reference_image_path = "images/after_image_cartooning.png" 
+mask_prompt = "American Eskimo dog"
+seed = 2 # Can be any random number between 0 to 214783647
+```
+
+```python
+with open(reference_image_path, "rb") as image_file:
+    reference_image_base64 = base64.b64encode(image_file.read()).decode("utf-8")
+
+    
+# Generate image condition on reference image
+body = json.dumps(
+    {
+        "taskType": "INPAINTING",
+        "inPaintingParams": {
+            "text": prompt,  # Optional - what to change inside the mask
+            "negativeText": negative_prompts,    # Optional
+            "image": reference_image_base64,  # Required
+            "maskPrompt": mask_prompt,  # One of "maskImage" or "maskPrompt" is required
+            # "maskImage": "base64-encoded string",   
+
+        },
+        "imageGenerationConfig": {
+                "numberOfImages": 1,
+                "seed": seed,
+            }
+    }
+)
+
+response = boto3_bedrock.invoke_model(
+    body=body, 
+    modelId="amazon.nova-canvas-v1:0",
+    accept="application/json", 
+    contentType="application/json"
+)
+
+response_body = json.loads(response.get("body").read())
+response_images = [
+    Image.open(io.BytesIO(base64.b64decode(base64_image)))
+    for base64_image in response_body.get("images")
+]
+
+# plot output
+plot_images(response_images, ref_image_path = reference_image_path)
+```
+
+### 2.5 Example: Color Conditioning
+
+#### Scenario
+Now, let's create a special promotional package design using Octank's brand color palette.
+
+#### Parameters
+
+1. **prompt**: Describes the desired output
+2. **hex_color_code**: Provide reference hex color codes
+
+```python
+# Define the prompt, reference image, color code and path to store the generated images
+prompt = "A white packet of premium dog food with an American Eskimo dog on it, professional product photography. Dog food is named Octank."
+hex_color_code = ["#81FC81", "#C9D688", "#FFFFFF"]
+seed = 42 # Can be any random number between 0 to 214783647
+
+output_save_path = "images/after_color_conditioning.png"
+```
+
+```python
+# Encode the reference image
+with open(reference_image_path, "rb") as image_file:
+    reference_image_base64 = base64.b64encode(image_file.read()).decode("utf-8")
+    
+    
+# Generate image condition on color palette
+body = json.dumps({
+    "taskType": "COLOR_GUIDED_GENERATION",
+    "colorGuidedGenerationParams": {
+        "text": prompt,
+        "colors": hex_color_code,
+    },
+    "imageGenerationConfig": {
+        "numberOfImages": 1,
+        "seed": seed,
+    }
+})
+
+response = boto3_bedrock.invoke_model(
+    body=body, 
+    modelId="amazon.nova-canvas-v1:0",
+    accept="application/json", 
+    contentType="application/json"
+)
+
+response_body = json.loads(response.get("body").read())
+response_images = [
+    Image.open(io.BytesIO(base64.b64decode(base64_image)))
+    for base64_image in response_body.get("images")
+]
+
+save_image(response_body.get("images")[0], output_save_path)
+
+# plot output
+plot_images(response_images, color_codes = hex_color_code)
+```
+
+### 2.6 Example: Outpainting
+
+#### Scenario
+Now, Octank wants to create a professional-looking ad with this new product with kitchen background. To do this kind of background replacement, we will use the outpainting feature offered by Nova Canvas models. 
+
+We will first expand the image size to provide more room, then generating the new image using outpainting feature.
+
+#### Parameters
+
+1. **prompt**: Describes the desired output
+2. **reference_image_path**: Path to image that will be edit
+3. **mask_prompt**: Describe the area on the image that will not be edited
+
+```python
+# Define the prompt and reference image
+prompt = "Dog food packet on a kitchen countertop"
+reference_image_path = "images/after_color_conditioning.png" 
+mask_prompt = "Dog food packet"
+seed = 100 # Can be any random number between 0 to 214783647
+
+# Expansion setting
+target_width = 2048
+target_height = 2048
+horizontal_position_percent=0.3
+vertical_position_percent=0.5
+
+output_save_path = "images/after_outpainting.png" 
+
+# Specify path to store the output
+expand_image_path = "images/expanded_image.png"
+```
+
+```python
+# Load reference image
+original_image = Image.open(reference_image_path)
+original_width, original_height = original_image.size
+
+# Calculate the position of the original image on the expanded canvas.
+position = (
+    int((target_width - original_width) * horizontal_position_percent),
+    int((target_height - original_height) * vertical_position_percent),
+)
+
+# Create an input image which contains the original image with an expanded
+# canvas.
+input_image = Image.new("RGB", (target_width, target_height), (235, 235, 235))
+input_image.paste(original_image, position)
+input_image.save(expand_image_path)
+    
+# Encode the reference image
+with open(expand_image_path, "rb") as image_file:
+    reference_image_base64 = base64.b64encode(image_file.read()).decode("utf-8")
+
+    
+# Generate image condition on reference image
+body = json.dumps(
+    {
+        "taskType": "OUTPAINTING",
+        "outPaintingParams": {
+            "text": prompt,  # Required
+            "image": reference_image_base64,  # Required
+            "maskPrompt": mask_prompt,  # One of "maskImage" or "maskPrompt" is required
+            "outPaintingMode": "PRECISE",  # One of "PRECISE" or "DEFAULT"
+        },
+        "imageGenerationConfig": {
+                "numberOfImages": 1,
+                "seed": seed,
+            }
+        
+    }
+)
+
+response = boto3_bedrock.invoke_model(
+    body=body, 
+    modelId="amazon.nova-canvas-v1:0",
+    accept="application/json", 
+    contentType="application/json"
+)
+
+response_body = json.loads(response.get("body").read())
+response_images = [
+    Image.open(io.BytesIO(base64.b64decode(base64_image)))
+    for base64_image in response_body.get("images")
+]
+
+save_image(response_body.get("images")[0], output_save_path)
+
+
+# plot output
+plot_images(response_images, ref_image_path = reference_image_path)
+```
+
+### 2.7 Example: Background Removal
+
+#### Scenario
+Octank has professional photos of their existing gourmet dog food. They want to use these images across various marketing materials with different background. In our last use case, we will use Background Removal feature from Amazon Nova Canvas to help Ocktank isolate its product image from their original backgrond.
+
+To use this feature, you just need to provide the image the model needs to work with. 
+
+```python
+# Define image needs to be processed and path to store the generated images
+reference_image_path = "images/after_outpainting.png" 
+```
+
+```python
+# Read image from file and encode it as base64 string.
+with open(reference_image_path, "rb") as image_file:
+    input_image = base64.b64encode(image_file.read()).decode('utf8')
+
+body = json.dumps({
+    "taskType": "BACKGROUND_REMOVAL",
+    "backgroundRemovalParams": {
+        "image": input_image,
+    }
+})
+
+response = boto3_bedrock.invoke_model(
+    body=body, 
+    modelId="amazon.nova-canvas-v1:0",
+    accept="application/json", 
+    contentType="application/json"
+)
+
+response_body = json.loads(response.get("body").read())
+response_images = [
+    Image.open(io.BytesIO(base64.b64decode(base64_image)))
+    for base64_image in response_body.get("images")
+]
+
+# plot output
+plot_images(response_images, ref_image_path= reference_image_path, original_title='Original Image', processed_title='Processed Image without Background')
+```
+
+## 3. Responsible AI in Action
+
+To continue supporting best practices in the responsible use of AI, Amazon Nova Canvas has built to detect and remove harmful content in the data, reject inappropriate content in the user input, and filter the models’ outputs that contain inappropriate content (such as hate speech, profanity, and violence). 
+
+Octank marketing team wants generate an appealing campaign by placing and image of Scooby Doo on the package. 
+
+```python
+# Define the prompt with some inputs blocked for being copyright image.
+prompt = "A white packet of premium dog food with Scooby Doo on it, professional product photography. Dog food is named Octank."
+negative_prompts = "poorly rendered, poor background details, poor packet details, poor text details, bleary text"
+seed = 42
+```
+
+```python
+# Generate text-to-image
+body = json.dumps(
+    {
+        "taskType": "TEXT_IMAGE",
+        "textToImageParams": {
+            "text": prompt,                    # Required
+            "negativeText": negative_prompts   # Optional
+        },
+        "imageGenerationConfig": {
+            "numberOfImages": 1,   # Range: 1 to 5 
+            "quality": "standard",  # Options: standard or premium
+            "height": 1024,       
+            "width": 1024,         
+            "cfgScale": 7.5,       # Range: 1.0 (exclusive) to 10.0
+            "seed": 42             # Range: 0 to 214783647
+        }
+    }
+)
+
+try:
+    response = boto3_bedrock.invoke_model(
+        body=body, 
+        modelId="amazon.nova-canvas-v1:0",
+        accept="application/json", 
+        contentType="application/json"
+    )
+    response_body = json.loads(response.get("body").read())
+    response_images = [
+        Image.open(io.BytesIO(base64.b64decode(base64_image)))
+        for base64_image in response_body.get("images")
+    ]
+
+    # Plot output
+    plot_images(response_images, processed_title="Generated Product Package")     
+
+# Handle ValidationException (Responsible AI)
+except boto3_bedrock.exceptions.ValidationException as error:
+    print(f"An error occurred: {error}")
+
+# Handle all the other errors
+except Exception as e:
+    # Handle any other unexpected exceptions
+    print(f"An unexpected error occurred: {e}")
+
+```
+
+**Note that:** Amazon Bedrock gives validation error as the input prompt is asking for images of Scooby Dog and hence violates copyright.
+
+## 4. Summary and Next Steps
+
+In this notebook lab, we explored the powerful features of Amazon Nova Cnavas through the lens of Octank, a premium dog food company. We covered:
+
+- Text to Image
+- Image Conditioning
+- Color Variation
+- Inpainting
+- Color Conditioning
+- Outpainting
+- Background Removal
+- Responsible AI in action
+
+These tools enable Octank to efficiently create diverse, high-quality visuals for their marketing campaigns, maintaining brand consistency while adapting to various styles.
+
+You can now leverage this GenAI-powered image generation to enhance your own creative workflows!
+
+### Next Steps
+
+If you want to know more about video generation, please head to the next notebook lab to explore how to create video contents for Octank Dog Food company!
+
+&nbsp; **NEXT ▶** [3_nova-reel-lab.ipynb](./3\_nova-reel-lab.ipynb).
+
+### 3_nova-reel-lab.ipynb
+
+# Module 4 - Exploring Video Generation with **Amazon Nova Reel**
+
+---
+
+In this notebook, we'll explore the capabilities of Amazon Nova Reel, a powerful video generation model.
+
+---
+
+### Introduction
+
+In this notebook, you'll explore Amazon Nova Reel, a cutting-edge video generation model that creates high-quality, studio-grade videos from text or a combination of text and images. Nova Reel enables text-to-video and image-and-text to video generation, producing up to two-minute videos in smooth 6-second segments at 1280x720 resolution and 24 FPS. Whether you're creating product showcases, dynamic marketing content, or storytelling animations, Nova Reel empowers businesses to generate compelling, visually rich video content with minimal effort—unlocking faster creative cycles and more personalized customer engagement.
+
+Following the use case for Octank Dog Food for Nova Canvas (in the previous notebook lab), we'll create short video ads for a dog food company using two main features:
+
+1. **Text-to-Video**: Generate a 6-second video from a text prompt.
+2. **Image-to-Video**: Generate a 6-second video using both text and an input image.
+
+### Prerequisites
+
+**If you are running AWS-facilitated event**, all other pre-requisites are satisfied and you can go to the next section.
+
+**If you are running this notebook as a self-paced lab**, then please make sure that:
+
+1. Your AWS execution role has the necessary permissions to write and read from the dedicated S3 location.
+2. The following minimum permissions are configured:
+   - `bedrock:InvokeModel`
+   - `s3:PutObject`
+   - `s3:GetObject`
+3. For better tracking of video generation jobs, we recommend adding these permissions:
+   - `bedrock:GetAsyncInvoke`
+   - `bedrock:ListAsyncInvokes`
+
+**Note:** Ensure that these permissions are properly scoped to the specific S3 buckets and prefixes you intend to use for security best practices.
+
+## 1. Setup
+
+### 1.1 Import Libraries and Init Clients
+
+First, let's import the required libraries and set up our Bedrock client
+
+```python
+import os
+import time
+import boto3
+import json
+import base64
+from botocore.exceptions import ClientError
+
+account_id = boto3.client('sts').get_caller_identity().get('Account')
+
+bedrock_runtime = boto3.client('bedrock-runtime')
+s3_bucket = f"video-bucket-{account_id}"
+local_output_folder = "output"
+```
+
+### 1.2 Create an S3 Bucket for Storing Results of Video Generation
+
+```python
+# Create S3 bucket if s3_bucket doesn't exist
+def create_bucket_if_not_exists(bucket_name, region="us-east-1"):
+    """
+    Create an S3 bucket if it doesn't exist.
+    
+    :param bucket_name: Name of the bucket
+    :param region: Region to create the bucket in, e.g., 'us-east-1'
+    :return: True if bucket was created or already exists, False on error
+    """
+    s3_client = boto3.client('s3', region_name=region)
+
+    try:
+        s3_client.head_bucket(Bucket=bucket_name)
+        print(f"Bucket '{bucket_name}' already exists.")
+        return True
+    except ClientError as e:
+        error_code = e.response['Error']['Code']
+        if error_code == '404':
+            try:
+                if region == "us-east-1":
+                    s3_client.create_bucket(Bucket=bucket_name)
+                else:
+                    location = {'LocationConstraint': region}
+                    s3_client.create_bucket(Bucket=bucket_name,
+                                            CreateBucketConfiguration=location)
+                print(f"Bucket '{bucket_name}' created successfully.")
+                return True
+            except ClientError as e:
+                print(f"Couldn't create bucket '{bucket_name}'. Error: {e}")
+                return False
+        else:
+            print(f"Error checking bucket '{bucket_name}'. Error: {e}")
+            return False
+        
+create_bucket_if_not_exists(s3_bucket)
+```
+
+## 2. Use Case Implementation: Text to Video
+
+#### Scenario
+
+Octank, a premium dog food company, is launching a new line of gourmet dog food. The marketing team wants to create engaging short video ads to showcase their product's quality and appeal. They decide to leverage Amazon Nova Reel's text-to-video generation capabilities to create a captivating 6-second video clip that highlights their product.
+
+#### What are the key parameters?
+
+1. **text**: This is the prompt that describes the video you want to generate. It should be detailed and descriptive to guide the model in creating the desired output.
+
+2. **durationSeconds**: This parameter sets the length of the generated video. Currently, Nova Reel supports 6-second videos.
+
+3. **fps**: Frames per second of the output video. The current supported value is 24 fps.
+
+4. **dimension**: This defines the resolution of the output video. The current supported dimension is 1280x720 pixels.
+
+5. **seed**: An optional parameter that initializes the generation process. Using the same seed with identical parameters will produce the same video, allowing for reproducibility.
+
+Let's generate our first video using these parameters:
+
+
+```python
+prompt = """
+Close-up shot of a shiny stainless steel bowl filled with gourmet dog food on a clean kitchen tile floor. Soft natural light from a nearby window highlights text textures. Slow camera zoom in, gradually revealing more detail of the appetizing meal. 4k resolution, cinematic quality.
+"""
+
+seed_num = 0
+```
+
+```python
+def generate_video_from_text(prompt, s3_output_path):
+    model_input = {
+        "taskType": "TEXT_VIDEO",
+        "textToVideoParams": {
+            "text": prompt
+            },
+        "videoGenerationConfig": {
+            "durationSeconds": 6, 
+            "fps": 24,
+            "dimension": "1280x720",
+            "seed": seed_num #random.randint(0, 2147483646),
+        },
+    }
+    response = bedrock_runtime.start_async_invoke(
+        modelId="amazon.nova-reel-v1:0",
+        modelInput=model_input,
+        outputDataConfig={"s3OutputDataConfig": {"s3Uri": f"s3://{s3_output_path}"}},
+    )
+
+    return response['invocationArn']
+
+
+invocation_arn = generate_video_from_text(prompt, s3_bucket)
+print(f"Video generation job started. Invocation ARN: {invocation_arn}")
+```
+
+### 2.1 Checking Job Progress
+
+To check the progress of our video generation jobs
+
+```python
+print("Waiting for video generation job to complete: ", end='')
+
+while True:
+    response = bedrock_runtime.get_async_invoke(invocationArn=invocation_arn)
+    if response["status"].upper() == "COMPLETED":
+        print(" done.")
+        break
+    print('█', end='', flush=True)
+    time.sleep(5)
+
+print("Job completed successfully with invocation ARN:", invocation_arn)
+```
+
+<div class="alert alert-block alert-info">
+<b>Note:</b> On average, it takes about 3-4 mins to generate the video.
+</div>
+
+
+### 2.2 Download the Generated Video
+
+Once the job is **completed**, we can download the generated video to local
+
+
+```python
+def download_video_for_invocation_arn(invocation_arn, bucket_name, destination_folder):
+    """
+    This function downloads the video file for the given invocation ARN.
+    """
+    invocation_id = invocation_arn.split("/")[-1]
+
+    # Create the local file path
+    file_name = f"{invocation_id}.mp4"
+
+    local_file_path = os.path.join(destination_folder, file_name)
+
+    # Ensure the output folder exists
+    os.makedirs(destination_folder, exist_ok=True)
+
+    # Create an S3 client
+    s3 = boto3.client("s3")
+
+    # List objects in the specified folder
+    response = s3.list_objects_v2(Bucket=bucket_name, Prefix=invocation_id)
+
+    # Find the first MP4 file and download it.
+    for obj in response.get("Contents", []):
+        object_key = obj["Key"]
+        if object_key.endswith(".mp4"):
+            print(f"""Downloading "{object_key}"...""")
+            s3.download_file(bucket_name, object_key, local_file_path)
+            print(f"Downloaded to {local_file_path}")
+            return local_file_path
+
+    # If we reach this point, no MP4 file was found.
+    print(f"Problem: No MP4 file was found in S3 at {bucket_name}/{invocation_id}")
+
+    return local_file_path
+    
+video_path = download_video_for_invocation_arn(invocation_arn, s3_bucket, local_output_folder)
+```
+
+```python
+# Preiview generated video
+from IPython.display import Video
+
+Video(video_path, width=900)
+```
+
+## 3. Use Case Implementation: Image to Video
+
+#### Scenario
+
+Now that Octank has a finalized design for their dog food package, they want to create a video that showcases the product from different angles. They decide to use Nova Reel's image-to-video feature to generate a 6-second video of the product rotating clockwise on a kitchen countertop
+
+#### What are the key parameters?
+- **text**: This is the prompt that describes the desired video animation.
+- **image**: The base64-encoded image that serves as the reference for the video.
+- **durationSeconds**: The length of the generated video (6 seconds).
+- **fps**: Frames per second of the output video (24 fps).
+- **dimension**: The resolution of the output video (1280x720 pixels).
+- **seed**: An optional parameter for reproducibility.
+
+Let's generate our video using these parameters:
+
+
+```python
+# Define function to convert image to base64 object
+def image_to_base64(image_path):
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode('utf-8')
+```
+
+```python
+# Customized parameters
+image_path = "images/video_input.png"
+base64_image = image_to_base64(image_path)
+
+prompt = "Camera slowly rotates in clockwise direction around the dog food package on a kitchen countertop"
+
+seed_num = 0  # Change this for different results
+
+image_format = image_path.split(".")[-1]
+if image_format not in ["png", "jpeg"]:
+    assert print("Only .png or .jpeg supported")
+```
+
+```python
+# Preview image to generate video from
+from IPython.display import Image
+
+Image(image_path)
+```
+
+```python
+def generate_video_from_image(prompt, base64_image, s3_output_path, image_format):
+    model_input = {
+        "taskType": "TEXT_VIDEO",
+        "textToVideoParams": {
+            "text": prompt,
+            "images": [
+                {
+                    "format": image_format,  # May be "png" or "jpeg"
+                    "source": {
+                        "bytes": base64_image
+                    }
+                }
+            ]
+        },
+        "videoGenerationConfig": {
+            "durationSeconds": 6, 
+            "fps": 24,
+            "dimension": "1280x720",
+            "seed": seed_num
+        },
+    }
+    response = bedrock_runtime.start_async_invoke(
+        modelId="amazon.nova-reel-v1:0",
+        modelInput=model_input,
+        outputDataConfig={"s3OutputDataConfig": {"s3Uri": f"s3://{s3_output_path}"}},
+    )
+
+    return response['invocationArn']
+
+invocation_arn = generate_video_from_image(prompt, base64_image, s3_bucket, image_format)
+print(f"Video generation job started. Invocation ARN: {invocation_arn}")
+```
+
+### 3.1 Check status and download the generated video
+
+```python
+print("Waiting for video generation job to complete: ", end='')
+
+while True:
+    response = bedrock_runtime.get_async_invoke(invocationArn=invocation_arn)
+    if response["status"].upper() == "COMPLETED":
+        print(" done.")
+        break
+    print('█', end='', flush=True)
+    time.sleep(5)
+
+print("Job completed successfully with invocation ARN:", invocation_arn)
+```
+
+<div class="alert alert-block alert-info">
+<b>Note:</b> On average, it takes about 3-4 mins to generate the video.
+</div>
+
+### 3.2 Download the Generated Video
+
+```python
+# Once the job is complete, download the video
+video_path = video_path = download_video_for_invocation_arn(invocation_arn, s3_bucket, local_output_folder)
+```
+
+```python
+# Preiview generated video
+from IPython.display import Video
+
+Video(video_path, width=900)
+```
+
+## 4. Conclusion and Next Steps
+
+In this notebook, we've demonstrated how to use Amazon Nova Reel to generate short video ads for a dog food company. We explored both text-to-video and image-to-video generation capabilities, providing a powerful tool for creating engaging visual content.
+
+### Next Steps
+
+Please return to the workshop instructions page and proceed to your next workshop module, if needed.
+
+
+
+# END OF PROMPT

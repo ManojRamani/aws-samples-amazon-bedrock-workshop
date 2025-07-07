@@ -1,363 +1,226 @@
-# Amazon Bedrock Integration with Open-Source Frameworks - Technical Summary
+# SUMMARY-06_OpenSource_examples.md
 
 ## Executive Summary
 
-The `06_OpenSource_examples` module demonstrates how to integrate Amazon Bedrock's foundation models with popular open-source frameworks for building generative AI applications. The module showcases various implementation patterns ranging from simple text generation with LangChain to complex multi-agent systems using LangGraph and CrewAI. These examples highlight how developers can leverage Amazon Bedrock's powerful foundation models while using familiar open-source tools to build sophisticated AI applications with features like retrieval-augmented generation (RAG), agent-based workflows, and evaluation frameworks.
-
-## Technical Architecture Overview
-
-```mermaid
-flowchart TD
-    subgraph "Foundation Models"
-        Bedrock["Amazon Bedrock"]
-        Bedrock --> Claude["Claude Models"]
-        Bedrock --> Titan["Titan Models"]
-        Bedrock --> Nova["Nova Models"]
-    end
-    
-    subgraph "Integration Layer"
-        LangChain["LangChain"]
-        LangGraph["LangGraph"]
-        CrewAI["CrewAI"]
-        Ragas["Ragas"]
-        
-        LangChain --> BedrockLLM["LangChain Bedrock LLM"]
-        LangChain --> BedrockEmbeddings["LangChain Bedrock Embeddings"]
-        LangGraph --> GraphState["State Management"]
-        LangGraph --> GraphNodes["Node Execution"]
-        CrewAI --> Agents["Agent Definition"]
-        CrewAI --> Tasks["Task Execution"]
-        Ragas --> Evaluation["Agent Evaluation"]
-    end
-    
-    subgraph "Application Patterns"
-        RAG["Retrieval Augmented Generation"]
-        SimpleAgent["Simple Agents"]
-        MultiAgent["Multi-Agent Systems"]
-        Tools["Tool Integration"]
-        Memory["Memory Systems"]
-    end
-    
-    Bedrock -.-> LangChain
-    Bedrock -.-> LangGraph
-    Bedrock -.-> CrewAI
-    
-    BedrockLLM --> RAG
-    BedrockLLM --> SimpleAgent
-    BedrockEmbeddings --> RAG
-    
-    GraphState --> MultiAgent
-    GraphNodes --> Tools
-    
-    Agents --> SimpleAgent
-    Agents --> MultiAgent
-    Tasks --> Tools
-    
-    RAG --> Evaluation
-    SimpleAgent --> Evaluation
-    MultiAgent --> Evaluation
-    
-    GraphState --> Memory
-    Agents --> Memory
-```
+The Amazon Bedrock Workshop Module 06 demonstrates how to integrate Amazon Bedrock with popular open-source frameworks like LangChain, LangGraph, and CrewAI. The module consists of 11 Jupyter notebooks that showcase various applications ranging from simple chatbots to complex agentic systems with retrieval-augmented generation (RAG) capabilities. The notebooks are organized into two main categories: high-level use cases (text generation with LangChain) and advanced agentic frameworks with evaluations and RAG. This module provides a comprehensive overview of how Amazon Bedrock can be leveraged with open-source tools to build sophisticated AI applications.
 
 ## Implementation Details Breakdown
 
-### 1. LangChain Integration with Amazon Bedrock
+### High-Level Use Cases with LangChain
 
-The module demonstrates several ways to use LangChain with Amazon Bedrock for text generation tasks:
+1. **Simple Chatbot (00_simple_chatbot.ipynb)**
+   - Implements a multi-lingual greeter chatbot using LangChain with Amazon Bedrock
+   - Demonstrates conversation retention using `InMemoryChatMessageHistory`
+   - Shows how to use `RunnableWithMessageHistory` to maintain conversation state
+   - Implements prompt templating for multi-lingual capabilities
 
-#### Simple Chatbot Implementation
+2. **Zero-Shot Generation (01_zero_shot_generation.ipynb)**
+   - Demonstrates zero-shot text generation using Amazon Nova Lite model
+   - Uses `PromptTemplate` to create customizable prompts for email generation
+   - Shows how to respond to customer feedback in a customer service scenario
 
-```python
-from langchain_aws import ChatBedrockConverse
-import boto3
+3. **Code Interpretation (02_code_interpret_w_langchain.ipynb)**
+   - Explains and interprets code snippets using LLMs
+   - Uses a custom prompt template to provide context for code explanation
+   - Demonstrates how to identify red flags and best practices in code
 
-bedrock_client = boto3.client("bedrock-runtime", region_name="us-west-2")
-llm = ChatBedrockConverse(
-    model="anthropic.claude-3-haiku-20240307-v1:0",
-    temperature=0,
-    max_tokens=None,
-    client=bedrock_client,
-)
-```
+4. **Code Translation (03_code_translate_w_langchain.ipynb)**
+   - Translates code from one programming language to another (C++ to Java)
+   - Uses a custom prompt template to guide the translation process
+   - Shows how to maintain functionality while adapting to language-specific constructs
 
-Key features demonstrated:
-- Creating a chatbot with conversation memory
-- Using prompt templates for consistent interactions
-- Multi-language support through foundation models
+5. **Long Text Summarization (04_long_text_summarization_using_LCEL_chains_on_langchain.ipynb)**
+   - Implements chunking strategies for handling documents that exceed context limits
+   - Uses LangChain Expression Language (LCEL) chains for processing
+   - Demonstrates two approaches: manual processing with insights and map-reduce pattern
+   - Summarizes a shareholder letter as an example use case
 
-#### Code Interpretation and Translation
+### Advanced Agentic Frameworks, RAG, and Evaluation
 
-The notebooks show how to use Bedrock models for code-related tasks:
-- Interpreting and explaining code snippets
-- Translating code between programming languages
-- Generating code based on natural language descriptions
+1. **Simple LangGraph Agent Setup (simple-langgraph-agent-setup.ipynb)**
+   - Introduces basic LangGraph concepts for building agentic systems
+   - Implements a travel planner that collects user input and generates itineraries
+   - Demonstrates state management and graph-based workflow design
+   - Shows different memory management approaches including external stores
 
-#### Long Text Summarization with LCEL
+2. **Intermediate LangGraph with Tools (intermediate-langgraph-agent-setup-w-tools.ipynb)**
+   - Builds on the simple agent by adding tool integration
+   - Demonstrates more complex state management
+   - Shows how to implement memory patterns for multi-turn conversations
 
-```python
-from langchain_core.runnables import RunnablePassthrough, RunnableParallel
+3. **Advanced LangGraph Multi-Agent Setup (advance-langgraph-multi-agent-setup.ipynb)**
+   - Implements a supervisor pattern with multiple specialized agents
+   - Creates a travel assistant with flight and hotel booking capabilities
+   - Demonstrates agent collaboration and task delegation
+   - Implements human-in-the-loop approval for critical operations
 
-# Example of LCEL (LangChain Expression Language) chain for summarization
-summarization_chain = (
-    RunnableParallel(
-        {"text": RunnablePassthrough(), "prompt": lambda x: summarization_prompt}
-    )
-    | bedrock_llm
-    | StrOutputParser()
-)
-```
+4. **RAG Implementation (find-relevant-information-using-RAG.ipynb)**
+   - Implements a complete RAG pipeline for travel information retrieval
+   - Shows advanced query processing techniques including:
+     - Intent detection with dynamic few-shots
+     - Query normalization
+     - Query decomposition and expansion
+     - Hypothetical Document Embeddings (HyDE)
+   - Demonstrates citation and self-validation techniques for answer generation
 
-This pattern demonstrates:
-- Breaking down long documents into manageable chunks
-- Processing chunks in parallel for efficiency
-- Combining results into a coherent summary
+5. **Agent Evaluation (ragas-agent-evaluation.ipynb)**
+   - Uses the ragas library to evaluate agent performance
+   - Implements both macro-level and micro-level evaluation approaches
+   - Demonstrates metrics like Agent Goal Accuracy and Tool Call Accuracy
+   - Shows how to convert between LangChain and ragas message formats
 
-### 2. Retrieval-Augmented Generation (RAG) Implementation
-
-The `find-relevant-information-using-RAG.ipynb` notebook provides a comprehensive implementation of RAG with several advanced techniques:
-
-#### Query Processing Pipeline
-
-```python
-rag_chain = RunnableParallel(
-    question=RunnablePassthrough(),
-    intent=few_shot_intent_detection_prompt | nova | parse_intent
-) | RunnableBranch(
-    (lambda payload: "vacation" == payload["intent"].lower(), lambda x: (
-        RunnablePassthrough().pick(["question"])
-        .assign(question=norm_chain)
-        .assign(question=parse_norm_message)
-        .assign(context=lambda inputs: wiki.invoke(inputs["question"]))
-        .assign(answer=answer_generator)
-        .pick(["answer", "context"])
-    )),
-    # Additional branches...
-)
-```
-
-Key techniques demonstrated:
-- **Intent Detection**: Using few-shot learning to classify user queries
-- **Query Normalization**: Reformulating queries for better retrieval
-- **Query Decomposition**: Breaking complex queries into simpler sub-queries
-- **Hypothetical Document Embeddings (HyDE)**: Generating synthetic documents to improve retrieval
-
-#### Document Retrieval and Answer Generation
-
-```python
-citation_chain = (
-    RunnableParallel(question=RunnablePassthrough(), docs=wiki)
-    .assign(context=format)
-    .assign(answer=answer_generator)
-    .pick(["answer", "docs"])
-)
-```
-
-This implementation shows:
-- Retrieving relevant documents from vector stores
-- Formatting documents for model consumption
-- Generating answers with proper citations
-- Self-validation to improve answer quality
-
-### 3. Agent Frameworks with LangGraph
-
-The `simple-langgraph-agent-setup.ipynb` and `intermediate-langgraph-agent-setup-w-tools.ipynb` notebooks demonstrate how to build agents using LangGraph:
-
-#### State Management in LangGraph
-
-```python
-class PlannerState(TypedDict):
-    messages: Annotated[List[HumanMessage | AIMessage], "The messages in the conversation"]
-    itinerary: str
-    city: str
-    user_message: str
-
-workflow = StateGraph(PlannerState)
-workflow.add_node("input_interests", input_interests)
-workflow.add_node("create_itinerary", create_itinerary)
-workflow.set_entry_point("input_interests")
-workflow.add_edge("input_interests", "create_itinerary")
-workflow.add_edge("create_itinerary", END)
-```
-
-Key concepts demonstrated:
-- Defining state schemas for agent workflows
-- Creating nodes for different processing steps
-- Connecting nodes with edges to define workflow
-- Managing conversation context across interactions
-
-#### Memory Systems in LangGraph
-
-```python
-# In-memory store for conversation history
-memory = MemorySaver()
-app = workflow.compile(checkpointer=memory)
-
-# External memory store
-in_memory_store = CustomMemoryStore(InMemoryStore())
-app = workflow.compile(store=in_memory_store)
-```
-
-The implementation shows:
-- Short-term memory for maintaining conversation context
-- Long-term memory for persistent information storage
-- Session-based memory management for multi-user scenarios
-
-### 4. CrewAI for React-Style Agents
-
-The `simple-crewai-agent-setup.ipynb` notebook demonstrates an alternative approach to agent development using CrewAI:
-
-```python
-from crewai import Agent, Task, Crew, LLM
-from crewai.tools import tool
-
-# Define the Agent
-travel_agent = Agent(
-    role='Travel Destination Researcher',
-    goal='Find dream destinations matching user preferences',
-    backstory="You are an experienced travel agent specializing in personalized travel recommendations.",
-    verbose=True,
-    allow_delegation=False,
-    llm=llm,
-    tools=[search]
-)
-
-# Define the Task
-task = Task(
-    description="Based on the user's travel preferences: {preferences}, research and recommend suitable travel destinations.",
-    expected_output="A list of recommended destinations with brief descriptions.",
-    agent=travel_agent
-)
-
-# Create the Crew
-crew = Crew(
-    agents=[travel_agent],
-    tasks=[task],
-    verbose=True,
-)
-```
-
-Key features demonstrated:
-- Role-based agent definition
-- Task-oriented workflow design
-- Tool integration for web search capabilities
-- Memory integration for context retention
-
-### 5. Multi-Agent Systems with LangGraph
-
-The `advance-langgraph-multi-agent-setup.ipynb` notebook demonstrates how to build complex multi-agent systems:
-
-```python
-# Example of multi-agent workflow (conceptual)
-travel_planner = StateGraph()
-travel_planner.add_node("destination_researcher", destination_researcher_agent)
-travel_planner.add_node("itinerary_creator", itinerary_creator_agent)
-travel_planner.add_node("booking_assistant", booking_assistant_agent)
-
-travel_planner.add_edge("destination_researcher", "itinerary_creator")
-travel_planner.add_edge("itinerary_creator", "booking_assistant")
-travel_planner.add_conditional_edges(
-    "booking_assistant",
-    lambda x: "needs_modification" if x["requires_changes"] else "complete",
-    {
-        "needs_modification": "itinerary_creator",
-        "complete": END
-    }
-)
-```
-
-This implementation demonstrates:
-- Multiple specialized agents working together
-- Complex workflow with conditional branching
-- Inter-agent communication patterns
-- Collaborative problem-solving
-
-### 6. Agent Evaluation with Ragas
-
-The `ragas-agent-evaluation.ipynb` notebook shows how to evaluate agent performance:
-
-```python
-from ragas.messages import HumanMessage as RGHumanMessage
-from ragas.messages import AIMessage as RGAIMessage
-from ragas.messages import ToolMessage as RGToolMessage
-from ragas.messages import ToolCall as RGToolCall
-
-def convert_message_langchain_to_ragas(lc_message):
-    message_dict = lc_message.model_dump()
-    if message_dict['type'] == 'human':
-        rg_message = RGHumanMessage(content=message_dict['content'])
-    # Additional conversion logic...
-    return rg_message
-```
-
-Key evaluation aspects covered:
-- Converting between message formats for evaluation
-- Measuring retrieval quality
-- Assessing answer faithfulness to retrieved content
-- Evaluating answer relevance to user queries
+6. **CrewAI Agent Setup (simple-crewai-agent-setup.ipynb)**
+   - Demonstrates an alternative React-style agent approach using CrewAI
+   - Creates a travel destination researcher agent
+   - Shows how to integrate memory and RAG capabilities
+   - Compares with the workflow-based approach in LangGraph
 
 ## Key Takeaways and Lessons Learned
 
-1. **Integration Flexibility**: Amazon Bedrock can be seamlessly integrated with popular open-source frameworks like LangChain, LangGraph, and CrewAI, allowing developers to leverage both AWS's managed foundation models and the flexibility of open-source tools.
+1. **Framework Integration**
+   - Amazon Bedrock seamlessly integrates with popular open-source frameworks like LangChain, LangGraph, and CrewAI
+   - Different frameworks offer complementary approaches to building AI applications
 
-2. **RAG Enhancement Techniques**: The module demonstrates several advanced techniques to improve RAG performance:
-   - Query preprocessing (normalization, decomposition, expansion)
-   - Hypothetical document generation
-   - Self-validation and citation
-   - These techniques can significantly improve retrieval quality and answer relevance.
+2. **Agent Architecture Patterns**
+   - Single agents are suitable for focused tasks but have limitations for complex applications
+   - Multi-agent systems with supervisor patterns provide better task delegation and specialization
+   - Human-in-the-loop approval can be integrated for critical operations
 
-3. **Agent Design Patterns**: Two main approaches to agent design are demonstrated:
-   - **LangGraph**: Graph-based workflow approach with explicit state management
-   - **CrewAI**: React-style agents with role-based definitions
-   - Each approach has strengths for different use cases.
+3. **Memory Management**
+   - Effective memory management is crucial for multi-turn conversations
+   - Different memory patterns (graph state, external stores, agent-specific memory) serve different needs
+   - Short-term vs. long-term memory considerations impact agent performance
 
-4. **Memory Management**: Effective memory systems are crucial for maintaining context in conversational applications:
-   - Short-term memory for immediate context
-   - Long-term memory for persistent information
-   - External storage for scalable solutions
+4. **RAG Techniques**
+   - Advanced RAG pipelines significantly improve retrieval quality
+   - Query processing techniques like decomposition, expansion, and HyDE enhance retrieval performance
+   - Citation and self-validation improve answer quality and trustworthiness
 
-5. **Tool Integration**: Agents become more powerful when they can access external tools:
-   - Web search capabilities
-   - Vector stores for document retrieval
-   - Custom functions for specific tasks
+5. **Evaluation Methodologies**
+   - Comprehensive evaluation requires both macro and micro-level approaches
+   - Tools like ragas provide standardized metrics for agent performance
+   - Different user profiles (new vs. returning) impact agent performance
 
-## Technical Recommendations and Next Steps
+## Technical Architecture Overview
 
-1. **Production Deployment Considerations**:
+### Basic Chatbot Architecture
+
+```mermaid
+    sequenceDiagram
+        participant User
+        participant ChatPromptTemplate
+        participant RunnableWithMessageHistory
+        participant ChatBedrock
+        participant InMemoryChatMessageHistory
+    
+        User->>ChatPromptTemplate: Input message
+        ChatPromptTemplate->>RunnableWithMessageHistory: Formatted prompt
+        RunnableWithMessageHistory->>InMemoryChatMessageHistory: Load conversation history
+        InMemoryChatMessageHistory->>RunnableWithMessageHistory: Return history
+        RunnableWithMessageHistory->>ChatBedrock: Send prompt + history
+        ChatBedrock->>RunnableWithMessageHistory: Response
+        RunnableWithMessageHistory->>InMemoryChatMessageHistory: Save new message
+        RunnableWithMessageHistory->>User: Display response
+```
+
+### RAG Pipeline Architecture
+
+```mermaid
+    flowchart TD
+        A[User Query] --> B[Intent Detection]
+        B --> C{Intent Classification}
+        C -->|Vacation| D[Query Normalization]
+        C -->|Irrelevant| E[Rejection Response]
+        C -->|Contact| F[Transfer to Agent]
+        D --> G[Query Processing]
+        G -->|Decomposition| H1[Sub-query 1]
+        G -->|Expansion| H2[Sub-query 2]
+        G -->|HyDE| H3[Hypothetical Document]
+        H1 --> I[Retrieval]
+        H2 --> I
+        H3 --> I
+        I --> J[Document Ranking]
+        J --> K[Answer Generation]
+        K --> L[Self-Validation]
+        L --> M[Final Response]
+```
+
+### Multi-Agent System Architecture
+
+```mermaid
+    flowchart TD
+        A[User Input] --> B[Supervisor Agent]
+        B --> C{Route Request}
+        C -->|Flight Related| D[Flight Agent]
+        C -->|Hotel Related| E[Hotel Agent]
+        D --> F[Flight Tools]
+        F -->|Search Flights| D
+        F -->|Retrieve Booking| D
+        F -->|Change Booking| D
+        F -->|Cancel Booking| D
+        E --> G[Hotel Tools]
+        G -->|Suggest Hotels| E
+        G -->|Retrieve Booking| E
+        G -->|Change Booking| H[Human Approval]
+        G -->|Cancel Booking| H
+        H --> E
+        D --> B
+        E --> B
+        B --> I{Task Complete?}
+        I -->|Yes| J[End]
+        I -->|No| B
+```
+
+### Simple LangGraph Agent Flow
+
+```mermaid
+    flowchart LR
+        A[START] --> B[input_interests]
+        B --> C[create_itinerary]
+        C --> D[END]
+```
+
+## Recommendations and Next Steps
+
+1. **Production Deployment**
+   - Replace in-memory storage with persistent databases for production use
    - Implement proper error handling and retry mechanisms
-   - Set up monitoring and logging for agent operations
-   - Consider caching mechanisms for frequently accessed embeddings
-   - Implement authentication and authorization for API access
+   - Set up monitoring and logging for agent performance
 
-2. **Performance Optimization**:
-   - Use parallel processing for independent operations
-   - Implement batching for multiple similar requests
-   - Consider model selection based on task complexity (e.g., Nova Lite for simpler tasks, Nova Pro for complex reasoning)
-   - Optimize vector store configurations for faster retrieval
+2. **Performance Optimization**
+   - Parallelize operations where possible to reduce latency
+   - Implement caching strategies for frequently accessed information
+   - Optimize chunking strategies for large document processing
 
-3. **Advanced Agent Features**:
-   - Implement more sophisticated planning capabilities
-   - Add reflection mechanisms for self-improvement
-   - Develop specialized agents for different domains
-   - Explore hybrid approaches combining LangGraph and CrewAI patterns
+3. **Enhanced User Experience**
+   - Implement streaming responses for better user experience
+   - Add support for multi-modal inputs and outputs
+   - Develop user feedback mechanisms to improve agent performance
 
-4. **Integration Opportunities**:
-   - Connect to additional data sources beyond web search
-   - Integrate with AWS services like Lambda for serverless execution
-   - Implement webhooks for real-time notifications
-   - Explore multi-modal capabilities with image and audio processing
+4. **Security and Privacy**
+   - Implement proper authentication and authorization
+   - Ensure sensitive information is handled securely
+   - Consider data retention policies for conversation history
 
-5. **Evaluation and Monitoring**:
-   - Implement comprehensive evaluation frameworks
-   - Set up continuous monitoring of agent performance
-   - Collect user feedback for ongoing improvement
-   - Develop automated testing for agent behaviors
+5. **Advanced Features**
+   - Explore more complex agentic patterns like hierarchical agents
+   - Implement domain-specific knowledge bases for better RAG performance
+   - Develop hybrid approaches combining different frameworks for optimal results
 
-## Conclusion
+6. **Evaluation and Improvement**
+   - Set up continuous evaluation pipelines using ragas or similar tools
+   - Collect user feedback to identify areas for improvement
+   - Implement A/B testing for different agent configurations
 
-The `06_OpenSource_examples` module provides a comprehensive overview of how Amazon Bedrock can be integrated with popular open-source frameworks to build sophisticated generative AI applications. By combining the power of Amazon's foundation models with the flexibility of open-source tools, developers can create applications that leverage advanced techniques like RAG, agent-based workflows, and multi-agent systems.
+The module provides a solid foundation for building sophisticated AI applications with Amazon Bedrock and open-source frameworks. By understanding the patterns and techniques demonstrated in these notebooks, developers can create powerful, context-aware applications that leverage the strengths of foundation models while addressing their limitations through thoughtful system design.
 
-The examples range from simple text generation to complex multi-agent systems, providing a valuable resource for developers at different stages of their generative AI journey. The module also highlights the importance of proper evaluation and the potential for combining different approaches to create more powerful and flexible solutions.
+## Token Utilization Summary
 
-As the field of generative AI continues to evolve, the patterns demonstrated in this module provide a solid foundation for building applications that can adapt to new requirements and capabilities while maintaining the reliability and scalability of AWS services.
+- **Prompt Length**: 202385 characters
+- **Estimated Token Count**: ~50596 tokens
+- **Context Window Utilization**: ~25.3% of 200K token context window
+
+
+---
+
+*This summary was generated by Claude 3.7 Sonnet from Anthropic on 2025-07-06 at 17:46:30.*

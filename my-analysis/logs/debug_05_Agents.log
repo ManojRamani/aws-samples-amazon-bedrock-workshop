@@ -1,0 +1,2945 @@
+# Debug Log for 05_Agents
+# Generated on: 2025-07-06 at 17:44:47
+# Prompt length: 120604 characters
+# Estimated token count: ~30151 tokens
+
+# FULL PROMPT:
+
+# Amazon Bedrock Workshop Module Analysis Prompt
+
+You are an expert technical tutor who specializes in breaking down complex implementation details into easily understandable explanations.
+
+## Task
+Analyze and document the codebase in the folder 05_Agents and create a comprehensive summary.
+
+## Deliverables
+
+### Code Analysis
+- Thoroughly examine the implementation details, architecture patterns, and key components
+
+### Summary Document
+Create a well-structured file named SUMMARY-05_Agents.md.md with the following sections:
+
+1. **Executive summary** (high-level overview)
+2. **Implementation details breakdown**
+3. **Key takeaways and lessons learned**
+4. **Technical architecture overview**
+5. **Recommendations or next steps** (if applicable)
+
+### Visual Documentation
+Include Mermaid diagrams where they add value:
+- Flowcharts for program logic
+- Sequence diagrams for user journeys (IMPORTANT: For any API interactions or request/response flows, include a sequence diagram showing the step-by-step process)
+- Architecture diagrams for system design
+- Class diagrams for object relationships
+- Choose the most appropriate diagram type for each context
+
+IMPORTANT: For modules involving APIs, always include at least one sequence diagram showing the request/response flow between components.
+
+### Additional Requirements
+- Use clear, jargon-free explanations suitable for intermediate developers
+- Provide code snippets with explanations where helpful
+- Highlight potential issues, optimizations, or best practices
+- Access the latest documentation using Context7 MCP when available
+
+## Output Format
+Markdown with proper headings, code blocks, and embedded Mermaid diagrams
+Place the generated report in my-analysis/SUMMARY-05_Agents.md.md
+
+
+IMPORTANT: Start your response directly with the title '# SUMMARY-05_Agents.md' (not abbreviated). Do not include any introductory text, preamble, or markdown tags before the title. Begin with the exact title and proceed with the analysis.
+
+# Folder Content to Analyze
+
+# Folder Content Summary for 05_Agents
+
+## README Content
+
+# Lab 7 - Agents for Bedrock
+
+## Overview
+
+In this lab, you will learn about [Agents for Amazon Bedrock](https://aws.amazon.com/bedrock/agents/), 
+an [Amazon Bedrock](https://aws.amazon.com/bedrock/) capability that lets you harness the Foundation Model's (FM's) 
+reasoning skills to execute multi-steps business tasks using natural language. You can simply state your problem, 
+like “help me update my product catalogue” and the agent breaks down the problem using the FM’s reasoning capabilities 
+and executes the steps to fulfill your request. You set up an agent with access to your organization’s enterprise systems, 
+processes, knowledge bases, and some building block functions. Then the agent comes up with the logic, figures out what APIs 
+to call and when to call them, and completes the transactions in the right sequence. When an agent needs a piece of information 
+from the user, it automatically asks the user for those additional details using natural language. And the best part about agents — 
+it’s leveraging the most up-to-date information you have and gives you relevant answers securely and privately. 
+
+An agent consists of the following components:
+
+* **Foundation model** – You choose a foundation model that the agent invokes to interpret user input and subsequent prompts in its orchestration process, and to generate responses and follow-up steps in its process.
+* **Instructions** – You write up instructions that describe what the agent is designed to do. With advanced prompts, you can further customize instructions for the agent at every step of orchestration and include Lambda functions to parse the output of each step.
+* **(Optional) Action groups** – You define the actions that the agent can help the user performing. An action group is composed of actions and the action executor. You can define actions by passing the function details via JSON object or using an API Schema file. You can execute the actions using a Lambda function, or you can return the control to the application and handle the function execution outside of Agents.
+* **(Optional) Knowledge bases for Amazon Bedrock** – Associate [Knowledge bases for Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html) with an agent to allow it to query the knowledge base for extra context to augment response generation and input into steps of the orchestration process.
+* **(Optional) Guardrails for Amazon Bedrock** Associate [Guardrails for Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html) with an agent to safeguard your Agent based on use cases and Responsible AI policies
+
+The following image schematizes the components of your agent.
+
+<img src="images/agent_components.png" style="width:40%;display:block;margin: 0 auto;">
+
+In build-time, all these components are gathered to construct base prompts for the agent in order to carry out orchestration until the user request is completed. With advanced prompts, you can modify these base prompts with additional logic and few-shot examples to improve accuracy for each step of agent invocation. The base prompt templates contain instructions, action descriptions, knowledge base descriptions, and conversation history, all of which you can customize to modify the agent to the best of your needs. You then prepare your agent, which packages all the components of the agents, including security configurations, and brings the agent into a state where it is ready for testing in runtime.
+
+
+## Audience
+
+Architects, data scientists and developer who want to learn how to use Agents for Amazon Bedrock to create generative AI applications. 
+From the simplest instruction only agent to complex assistants that combine Action Groups with Knowledge Bases, you can use the power of agents to quickly develop your Generative API application.
+
+## Workshop Notebooks
+During this workshop, you will cover three modules:
+
+1. **Building Agents for Bedrock using Boto3 SDK**: In this module, you will create agents for Bedrock programmatically using the restaurant agent example. This module uses the `01_create_agent.ipynb` file
+2. **Integrating Knowledge Bases to your Agents**: In this module, you will create a Knowledge Base and update your restaurant agent to connect this knowledge via Boto3 SDK. This module uses the `02_associate_knowledge_base_to_agent.ipynb` file
+3. **Test your Agent**: In this module, you will invoke your agent with different prompts. This module uses the `03_invoke_agent.ipynb` file 
+4. **Clean up Resources**: In the last module you will dissociate all resources from your agent and delete them. This module uses the `04_clean_up_agent_resources.ipynb` file
+
+## Setup
+Before running any of the labs in this section ensure you've installed the requirements from `requirements.txt` file.
+
+## Architecture
+In this lab we will create a restaurant assistant agent that connects with a Knowledge Base for Amazon Bedrock containing the restaurant's different menus.
+This agent also connects to an action group that provides functionalities for handling the table booking in this restaurant.
+![Agents architect](images/agent-architecture.png)
+
+The action group created in this example, uses Feature Definition to define the functionalities for `create_booking`, `get_booking_details` and `delete_booking`.
+The action group execution connects with a Lambda function that interacts with an Amazon DynamoDB table.
+
+## Agents deep dive workshop
+The Agents for Amazon Bedrock labs in this workshop provide a high-level overview of the Agents content.
+For a deep dive into Agents concepts, including concepts such as return of control, advanced prompts and others, you can check the [Agents for Amazon Bedrock Workshop](https://catalog.workshops.aws/agents-for-amazon-bedrock/en-US)
+
+## File Statistics
+
+Total files found: 16
+Notebooks: 5
+Python files: 2
+Markdown files: 1
+Other files: 8
+
+Important files selected based on patterns: 3
+
+## Files in the folder
+
+### Notebooks
+- 01_create_agent.ipynb
+- 02_associate_knowledge_base_to_agent.ipynb
+- 03_invoke_agent.ipynb
+- 04_clean_up_agent_resources.ipynb
+- 05_bonus_inline_agents.ipynb
+
+### Python Files
+- agent.py
+- knowledge_base.py
+
+### Markdown Files
+
+### Other Files
+- requirements.txt
+- Restaurant_Childrens_Menu.pdf
+- Restaurant_Dinner_Menu.pdf
+- Restaurant_week_specials.pdf
+
+## Content of Key Files
+
+### 01_create_agent.ipynb
+
+# Agents for Amazon Bedrock - create agent
+
+This notebook provides sample code for building an Agent for Amazon Bedrock that has an Action Group attached to it.
+
+### Use Case
+We will create a restaurant assistant that allows customers to create, delete or get reservation information. The architecture looks as following:
+
+![Agent Architecture](./images/agent-architecture_1.png)
+
+### Notebook Walk-through
+
+In this notebook we will:
+- Choose our Agent's underline foundation model
+- Create a dynamoDB table to store the reservation details
+- Create a lambda function that handles the restaurant bookings
+- Create an agent
+- Create an action group and associate it with the agent
+- Test the agent invocation
+
+
+### Next Steps: 
+In the next lab, we will add a Knowledge Base to our agent and work with Prompt Attributes to provide extra information to an agent invocation call
+
+
+### Pre-requisites
+This notebook requires permissions to:
+- create and delete Amazon IAM roles
+- create lambda functions
+- create dynamoDB tables
+- access Amazon Bedrock
+
+If running on SageMaker Studio, you should add the following managed policies to your role:
+- IAMFullAccess
+- AWSLambda_FullAccess
+- AmazonBedrockFullAccess
+- AmazonDynamoDBFullAccess
+
+<div class="alert alert-block alert-info">
+<b>Note:</b> Please make sure to enable `Anthropic Claude 3 Sonnet` model access in Amazon Bedrock Console, as the notebook will use Anthropic Claude 3 Sonnet model for testing the agent once its created.
+</div>
+
+
+## Setup
+Before running the rest of this notebook, you'll need to run the cells below to ensure necessary libraries are installed
+
+```python
+!pip install --upgrade -q -r requirements.txt
+```
+
+Let's now import the necessary libraries and initiate the required boto3 clients
+
+```python
+import time
+import boto3
+import logging
+import ipywidgets as widgets
+import uuid
+
+from agent import create_agent_role, create_lambda_role
+from agent import create_dynamodb, create_lambda, invoke_agent_helper
+```
+
+```python
+#Clients
+s3_client = boto3.client('s3')
+sts_client = boto3.client('sts')
+session = boto3.session.Session()
+region = session.region_name
+account_id = sts_client.get_caller_identity()["Account"]
+bedrock_agent_client = boto3.client('bedrock-agent')
+bedrock_agent_runtime_client = boto3.client('bedrock-agent-runtime')
+logging.basicConfig(format='[%(asctime)s] p%(process)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
+region, account_id
+```
+
+### Setting up Agent's information
+
+We will now set the variables that define our agent:
+
+- **agent_name**: provides the name of the agent to be created, in this case `booking-agent`
+- **agent_description**: the description of the agent used to display the agents list on the console. This description is **not** part of the agent's prompts
+- **agent_instruction**: the instructions of what the agent should and should not do. This description is part of the agent's prompt and is used during the agent's invocation
+- **agent_action_group_name**: the action group name used on the definition of the agent's action, in this case `TableBookingsActionGroup`.
+- **agent_action_group_description:**: the description of the action group name used on the UI to list the action groups. This description is **not** used by the agent's prompts
+
+```python
+suffix = f"{region}-{account_id}"
+agent_name = 'booking-agent'
+agent_bedrock_allow_policy_name = f"{agent_name}-ba"
+agent_role_name = f'AmazonBedrockExecutionRoleForAgents_{agent_name}'
+
+agent_description = "Agent in charge of a restaurants table bookings"
+agent_instruction = """
+You are a restaurant agent, helping clients retrieve information from their booking,
+create a new booking or delete an existing booking
+"""
+
+agent_action_group_description = """
+Actions for getting table booking information, create a new booking or delete an existing booking"""
+
+agent_action_group_name = "TableBookingsActionGroup"
+```
+
+### Select Foundation Model
+Use this dropdown menu to select the underline model of your agent. You can find more information about the supported foundation models [here](https://docs.aws.amazon.com/bedrock/latest/userguide/agents-supported.html)
+
+```python
+agent_foundation_model_selector = widgets.Dropdown(
+    options=[
+        ('Claude 3 Sonnet', 'anthropic.claude-3-sonnet-20240229-v1:0'),
+        ('Claude 3 Haiku', 'anthropic.claude-3-haiku-20240307-v1:0')
+    ],
+    value='anthropic.claude-3-sonnet-20240229-v1:0',
+    description='FM:',
+    disabled=False,
+)
+agent_foundation_model_selector
+```
+
+Let's confirm that the model has been selected correctly
+
+```python
+agent_foundation_model = agent_foundation_model_selector.value
+agent_foundation_model
+```
+
+### Creating DynamoDB table
+
+Let's now create an [Amazon DynamoDB](https://aws.amazon.com/dynamodb/) table called `restaurant_bookings`. This table will store information about the reservations, including a `booking_id`, reservation `date`, the `name` of the person doing the reservation, the `hour` of the reservation and the number of guests as `num_guests`. To do so, we use the `create_dynamodb` function from the `agent.py` file. This function will support the creation of the table and its requirements (IAM roles and permissions).
+
+```python
+table_name = 'restaurant_bookings'
+create_dynamodb(table_name)
+```
+
+### Creating Lambda Function
+
+Next we will create the [AWS Lambda](https://aws.amazon.com/lambda/) function that executes the actions for our agent. This lambda function will have 3 actions:
+* ```get_booking_details(booking_id)```: returns the details of a booking based on the booking id
+* ```create_booking(date, name, hour, num_guests)```: creates a new booking for the restaurant
+* ```delete_booking(booking_id)```: deletes an existent booking based on the booking id
+
+
+The `lambda_handler` receives the `event` from the agent and the `event` contains information about the `function` to be executed and its `parameters`. 
+
+A `functionResponse` is returned by the lambda function with the response body having a `TEXT` field.
+
+You can find more information on how to set your agent lambda function [here](https://docs.aws.amazon.com/bedrock/latest/userguide/agents-lambda.html).
+
+Let's first write the code of the lambda function to the `lambda_function.py` file
+
+```python
+%%writefile lambda_function.py
+import json
+import uuid
+import boto3
+
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('restaurant_bookings')
+
+def get_named_parameter(event, name):
+    """
+    Get a parameter from the lambda event
+    """
+    return next(item for item in event['parameters'] if item['name'] == name)['value']
+
+
+def get_booking_details(booking_id):
+    """
+    Retrieve details of a restaurant booking
+    
+    Args:
+        booking_id (string): The ID of the booking to retrieve
+    """
+    try:
+        response = table.get_item(Key={'booking_id': booking_id})
+        if 'Item' in response:
+            return response['Item']
+        else:
+            return {'message': f'No booking found with ID {booking_id}'}
+    except Exception as e:
+        return {'error': str(e)}
+
+
+def create_booking(date, name, hour, num_guests):
+    """
+    Create a new restaurant booking
+    
+    Args:
+        date (string): The date of the booking
+        name (string): Name to idenfity your reservation
+        hour (string): The hour of the booking
+        num_guests (integer): The number of guests for the booking
+    """
+    try:
+        booking_id = str(uuid.uuid4())[:8]
+        table.put_item(
+            Item={
+                'booking_id': booking_id,
+                'date': date,
+                'name': name,
+                'hour': hour,
+                'num_guests': num_guests
+            }
+        )
+        return {'booking_id': booking_id}
+    except Exception as e:
+        return {'error': str(e)}
+
+
+def delete_booking(booking_id):
+    """
+    Delete an existing restaurant booking
+    
+    Args:
+        booking_id (str): The ID of the booking to delete
+    """
+    try:
+        response = table.delete_item(Key={'booking_id': booking_id})
+        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+            return {'message': f'Booking with ID {booking_id} deleted successfully'}
+        else:
+            return {'message': f'Failed to delete booking with ID {booking_id}'}
+    except Exception as e:
+        return {'error': str(e)}
+    
+
+def lambda_handler(event, context):
+    # get the action group used during the invocation of the lambda function
+    actionGroup = event.get('actionGroup', '')
+    
+    # name of the function that should be invoked
+    function = event.get('function', '')
+    
+    # parameters to invoke function with
+    parameters = event.get('parameters', [])
+
+    if function == 'get_booking_details':
+        booking_id = get_named_parameter(event, "booking_id")
+        if booking_id:
+            response = str(get_booking_details(booking_id))
+            responseBody = {'TEXT': {'body': json.dumps(response)}}
+        else:
+            responseBody = {'TEXT': {'body': 'Missing booking_id parameter'}}
+
+    elif function == 'create_booking':
+        date = get_named_parameter(event, "date")
+        name = get_named_parameter(event, "name")
+        hour = get_named_parameter(event, "hour")
+        num_guests = get_named_parameter(event, "num_guests")
+
+        if date and hour and num_guests:
+            response = str(create_booking(date, name, hour, num_guests))
+            responseBody = {'TEXT': {'body': json.dumps(response)}}
+        else:
+            responseBody = {'TEXT': {'body': 'Missing required parameters'}}
+
+    elif function == 'delete_booking':
+        booking_id = get_named_parameter(event, "booking_id")
+        if booking_id:
+            response = str(delete_booking(booking_id))
+            responseBody = {'TEXT': {'body': json.dumps(response)}}
+        else:
+            responseBody = {'TEXT': {'body': 'Missing booking_id parameter'}}
+
+    else:
+        responseBody = {'TEXT': {'body': 'Invalid function'}}
+
+    action_response = {
+        'actionGroup': actionGroup,
+        'function': function,
+        'functionResponse': {
+            'responseBody': responseBody
+        }
+    }
+
+    function_response = {'response': action_response, 'messageVersion': event['messageVersion']}
+    print("Response: {}".format(function_response))
+
+    return function_response
+```
+
+Next we create the function requirements for IAM role and policies using the support function `create_lambda_role` and create the lambda using the support function `create_lambda` both from the `agent.py` file
+
+```python
+lambda_iam_role = create_lambda_role(agent_name, table_name)
+```
+
+```python
+lambda_function_name = f'{agent_name}-lambda'
+```
+
+```python
+lambda_function = create_lambda(lambda_function_name, lambda_iam_role)
+```
+
+### Creating Agent
+
+Now that we have created the dynamoDB table and lambda function, let's create our Agent. 
+
+To do so, we first need to create an agent role and its required policies. Let's do so using the `create_agent_role` function from the `agent.py` file.
+
+```python
+agent_role = create_agent_role(agent_name, agent_foundation_model)
+```
+
+```python
+agent_role
+```
+
+With the Agent IAM role created, we can now use the boto3 function [`create_agent`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-agent/client/create_agent.html) to create our agent. 
+
+On the agent creation, all you need to provide is the agent name, foundation model and instruction. We will associate an action group to the agent once it has been created
+
+```python
+response = bedrock_agent_client.create_agent(
+    agentName=agent_name,
+    agentResourceRoleArn=agent_role['Role']['Arn'],
+    description=agent_description,
+    idleSessionTTLInSeconds=1800,
+    foundationModel=agent_foundation_model,
+    instruction=agent_instruction,
+)
+response
+```
+
+Now that our agent has been created, we will retrieve the `agentId`. It will be used to associate the action group to the agent in our next step.
+
+```python
+agent_id = response['agent']['agentId']
+print("The agent id is:",agent_id)
+```
+
+#### Create Agent Action Group
+
+now that we have created the agent, let's create an [Action Group](https://docs.aws.amazon.com/bedrock/latest/userguide/agents-action-create.html) and associate with the agent. The action group will allow our agent to execute the booking tasks. To do so, we will "inform" our agent about the existent functionalities using a [function schema](https://docs.aws.amazon.com/bedrock/latest/userguide/agents-action-function.html) defined in `JSON` format.
+
+The function schema requires the function `name`, `description` and `parameters` to be provided. Each parameter has a parameter name, description, type and a boolean flag indicating if the parameter is required.
+
+Let's define the functions `JSON` as `agent_functions`
+
+```python
+agent_functions = [
+    {
+        'name': 'get_booking_details',
+        'description': 'Retrieve details of a restaurant booking',
+        'parameters': {
+            "booking_id": {
+                "description": "The ID of the booking to retrieve",
+                "required": True,
+                "type": "string"
+            }
+        }
+    },
+    {
+        'name': 'create_booking',
+        'description': 'Create a new restaurant booking',
+        'parameters': {
+            "date": {
+                "description": "The date of the booking in the format YYYY-MM-DD",
+                "required": True,
+                "type": "string"
+            },
+            "name": {
+                "description": "Name to idenfity your reservation",
+                "required": True,
+                "type": "string"
+            },
+            "hour": {
+                "description": "The hour of the booking in the format HH:MM",
+                "required": True,
+                "type": "string"
+            },
+            "num_guests": {
+                "description": "The number of guests for the booking",
+                "required": True,
+                "type": "integer"
+            }
+        }
+    },
+    {
+        'name': 'delete_booking',
+        'description': 'Delete an existing restaurant booking',
+        'parameters': {
+            "booking_id": {
+                "description": "The ID of the booking to delete",
+                "required": True,
+                "type": "string"
+            }
+        }
+    },
+]
+```
+
+Now we can use the [`create_agent_action_group`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-agent/client/create_agent_action_group.html) function from the boto3 SDK to create the action group
+
+```python
+# Pause to make sure agent is created
+time.sleep(30)
+
+# Now, we can configure and create an action group here:
+agent_action_group_response = bedrock_agent_client.create_agent_action_group(
+    agentId=agent_id,
+    agentVersion='DRAFT',
+    actionGroupExecutor={
+        'lambda': lambda_function['FunctionArn']
+    },
+    actionGroupName=agent_action_group_name,
+    functionSchema={
+        'functions': agent_functions
+    },
+    description=agent_action_group_description
+)
+```
+
+```python
+agent_action_group_response
+```
+
+#### Allowing bedrock to invoke lambda function
+
+The last requirement is to add the [resource-based policy](https://docs.aws.amazon.com/bedrock/latest/userguide/agents-permissions.html#agents-permissions-lambda) to allow bedrock to invoke the action group lambda function.
+
+```python
+# Create allow to invoke permission on lambda
+lambda_client = boto3.client('lambda')
+try:
+    response = lambda_client.add_permission(
+        FunctionName=lambda_function_name,
+        StatementId=f'allow_bedrock_{agent_id}',
+        Action='lambda:InvokeFunction',
+        Principal='bedrock.amazonaws.com',
+        SourceArn=f"arn:aws:bedrock:{region}:{account_id}:agent/{agent_id}",
+    )
+    print(response)
+except Exception as e:
+    print(e)
+```
+
+#### Preparing agent
+
+Before invoking the agent we need to prepare it. Preparing your agent will package all its components, including the security configurations. It will bring the agent into a state where it can be tested in runtime. We will use the [`prepare_agent`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-agent/client/prepare_agent.html) function from the boto3 sdk to prepare our agent.
+
+```python
+response = bedrock_agent_client.prepare_agent(
+    agentId=agent_id
+)
+print(response)
+# Pause to make sure agent is prepared
+time.sleep(30)
+```
+
+### Invoking Agent
+
+Now that our Agent is ready to be used, let's test it. To do so we will use the [`invoke_agent`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-agent-runtime/client/invoke_agent.html) function from the boto3 Bedrock runtime client.
+
+To invoke an agent, you have to refer to its alias. You can create a new alias, or you can use the test alias to invoke your `DRAFT` agent. The test alias used to invoke the draft agent is `TSTALIASID` and it will work with any agent. 
+
+
+We will use the support function called `invoke_agent_helper` from the `agents.py` support file to allow us to invoke the agent with or without trace enabled and with or without session state. We will getinto more details about those concepts in the `03_invoke_agent.ipynb` notebook.
+
+```python
+alias_id = 'TSTALIASID'
+```
+
+```python
+%%time
+session_id:str = str(uuid.uuid1())
+query = "Hi, I am Anna. I want to create a booking for 2 people, at 8pm on the 5th of May 2024."
+response = invoke_agent_helper(query, session_id, agent_id, alias_id)
+print(response)
+```
+
+### Next Steps
+
+Before moving to the next notebook, let's store a couple of variables to continue working the the same notebook.
+
+Next we will update our agent to associate a knowledge base containing the menus for our restaurant. We will then test the agent invocations and clean up all the created resources.
+
+```python
+%store agent_id
+%store agent_role
+%store lambda_iam_role
+%store agent_name
+%store suffix
+%store region
+%store agent_foundation_model
+%store account_id
+%store alias_id
+%store table_name
+%store lambda_function
+%store lambda_function_name
+%store agent_action_group_response
+%store agent_functions
+```
+
+### 02_associate_knowledge_base_to_agent.ipynb
+
+# Agents for Amazon Bedrock - Associate Knowledge Base to Agent
+
+This notebook provides sample code for associating a Knowledge Base for Amazon Bedrock to an existent Agent for Amazon Bedrock that has an Action Group attached to it.
+
+### Use Case
+We will update our restaurant assistant to allow customers to also ask questions about the restaurant menus. The architecture looks as following:
+
+![Agent Architecture](./images/agent-architecture.png)
+
+### Notebook Walk-through
+
+In this notebook we will:
+- Retrieve the saved variables from the previous notebook
+- Create a Knowledge Base and its pre-requirements (including OpenSearch Servelless Collection and Indexes)
+- Synchronize Knowledge Base with documents containing restaurant menus
+- Update Agent IAM role to allow for Knowledge Base access
+- Associate Knowledge Base with Restaurant Agent
+- Test Agent invocation with Knowledge Base access
+
+
+### Next Steps: 
+In the next lab, we will test the agent invocation with Action Group and Knowledge Base requests as well as provide extra information to the agent using Prompt attributes
+
+### Pre-requisites
+
+Before starting this lab, we need to load the variables that we stored in the previous notebook.
+
+```python
+%store -r
+```
+
+```python
+agent_id
+```
+
+Let's now import the necessary libraries and initiate the required boto3 clients
+
+```python
+from knowledge_base import KnowledgeBasesForAmazonBedrock
+from agent import invoke_agent_helper
+import boto3
+import os
+import time
+import json
+```
+
+```python
+iam_client = boto3.client('iam')
+bedrock_agent_client = boto3.client('bedrock-agent')
+bedrock_agent_runtime_client = boto3.client('bedrock-agent-runtime')
+s3_client = boto3.client('s3')
+```
+
+### Setting up Knowledge Base Information
+
+We will now set the variables that define our Knowledge Base:
+
+- **knowledge_base_name**: provides the name of the Knowledge Base to be created, in this case `booking-agent-kb`
+- **knowledge_base_description**: the description of the knowledge base used to display the agents list on the console. This description is **not** part of the agent's prompts
+- **bucket_name**: name of the bucket containing the Knowledge Base documents
+
+```python
+knowledge_base_name = f'{agent_name}-kb'
+knowledge_base_description = "Knowledge Base containing the restaurant menu's collection"
+bucket_name = f'{agent_name}-{suffix}'
+```
+
+### Creating Knowledge Base for Amazon Bedrock
+
+We will now going to create a Knowledge Base for Amazon Bedrock and its requirements including:
+- [Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/features/serverless/) for the vector database
+- [AWS IAM](https://aws.amazon.com/iam/) roles and permissions
+- [Amazon S3](https://aws.amazon.com/s3/) bucket to store the knowledge base documents
+
+To create the knowledge base and its dependencies, we will use the `BedrockKnowledgeBase` support class, available in this folder. It allows you to create a new knowledge base, ingest documents to the knowledge base data source and delete the resources after you are done working with this lab.
+
+Note that creation of the Amazon OpenSearch Serverless collection can take several minutes. You can use the Amazon OpenSearch Serverless console to monitor creation progress.
+
+```python
+kb = KnowledgeBasesForAmazonBedrock()
+kb_id, ds_id = kb.create_or_retrieve_knowledge_base(knowledge_base_name, knowledge_base_description, bucket_name)
+```
+
+We now upload the knowledge base documents to S3
+
+```python
+def upload_directory(path, bucket_name):
+        for root,dirs,files in os.walk(path):
+            for file in files:
+                file_to_upload = os.path.join(root,file)
+                print(f"uploading file {file_to_upload} to {bucket_name}")
+                s3_client.upload_file(file_to_upload,bucket_name,file)
+
+upload_directory("kb_documents", bucket_name)
+```
+
+And ingest the documents to the knowledge base
+
+```python
+# ensure that the kb is available
+i_status = ['CREATING', 'DELETING', 'UPDATING']
+while bedrock_agent_client.get_knowledge_base(knowledgeBaseId=kb_id)['knowledgeBase']['status'] in i_status:
+    time.sleep(10)
+
+# sync knowledge base
+kb.synchronize_data(kb_id, ds_id)
+```
+
+### Testing Knowledge Base
+
+Let's now test that the created knowledge base works as expected. To do so, we first retrieve the knowledge base id
+
+Next we can use the [`RetrieveAndGenerate`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-agent-runtime/client/retrieve_and_generate.html) API from boto3 to retrieve the context for the question from the knowledge base and generate the final response
+
+```python
+response = bedrock_agent_runtime_client.retrieve_and_generate(
+    input={
+        "text": "Which are the 5 mains available in the childrens menu?"
+    },
+    retrieveAndGenerateConfiguration={
+        "type": "KNOWLEDGE_BASE",
+        "knowledgeBaseConfiguration": {
+            'knowledgeBaseId': kb_id,
+            "modelArn": "arn:aws:bedrock:{}::foundation-model/{}".format(region, agent_foundation_model),
+            "retrievalConfiguration": {
+                "vectorSearchConfiguration": {
+                    "numberOfResults":5
+                } 
+            }
+        }
+    }
+)
+
+print(response['output']['text'],end='\n'*2)
+```
+
+### Updating Agent role to allow Knowledge Base Retrieve and Retrieve and Generate queries
+
+Now that our Knowledge Base is working, we will associate it with the agent. To do so, we first need to update the agent role to allow for retrieval from context from our knowledge base
+
+```python
+kb_policies_statements = [
+    {
+        "Sid": "QueryKB",
+        "Effect": "Allow",
+        "Action": [
+            "bedrock:Retrieve",
+            "bedrock:RetrieveAndGenerate"
+        ],
+        "Resource": [
+            f"arn:aws:bedrock:{region}:{account_id}:knowledge-base/{kb_id}"
+        ]
+    }
+]
+bedrock_agent_kb_policy_statement = {
+    "Version": "2012-10-17",
+    "Statement": kb_policies_statements
+}
+bedrock_agent_kb_policy_json = json.dumps(bedrock_agent_kb_policy_statement)
+kb_policy_name = f"{agent_name}-kb-{kb_id}"
+agent_kb_policy = iam_client.create_policy(
+    PolicyName=kb_policy_name,
+    PolicyDocument=bedrock_agent_kb_policy_json
+)
+iam_client.attach_role_policy(
+    RoleName=agent_role['Role']['RoleName'],
+    PolicyArn=agent_kb_policy['Policy']['Arn']
+)
+```
+
+#### Associate Knowledge Base with Agent
+
+Finally, we can associate the new knowledge base with the agent using the [`AssociateAgentKnowledgeBase`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-agent/client/associate_agent_knowledge_base.html) API from boto3
+
+```python
+#time.sleep(10)
+response = bedrock_agent_client.associate_agent_knowledge_base(
+    agentId=agent_id,
+    agentVersion='DRAFT',
+    description='Access the knowledge base when customers ask about the plates in the menu.',
+    knowledgeBaseId=kb_id,
+    knowledgeBaseState='ENABLED'
+)
+```
+
+#### Preparing Agent
+
+after updating our agent, we need to prepare it again to package all its new components
+
+```python
+response = bedrock_agent_client.prepare_agent(
+    agentId=agent_id
+)
+print(response)
+# Pause to make sure agent is prepared
+intermediate_agent_status = ['CREATING', 'PREPARING', 'UPDATING', 'VERSIONING']
+while bedrock_agent_client.get_agent(agentId=agent_id)['agent']['agentStatus'] in intermediate_agent_status:
+    time.sleep(10)
+
+```
+
+### Invoking Agent
+
+Now that our Agent has been updated, let's test it again. To do so we will again use the [`invoke_agent`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-agent-runtime/client/invoke_agent.html) function from the boto3 Bedrock runtime client.
+
+We will use the same support function called `invoke_agent_helper` to allow us to invoke the agent with or without trace enabled and with or without session state. We will get into more details about those concepts in the `03_invoke_agent.ipynb` notebook.
+
+Now we can test it by asking a question where the answer is available in the knowledge base documents
+
+```python
+%%time
+import uuid
+session_id:str = str(uuid.uuid1())
+query = "What are the entrees in the childrens menu?"
+response = invoke_agent_helper(query, session_id, agent_id, alias_id)
+print(response)
+```
+
+### Next Steps
+
+Before moving to the next notebook, let's store a couple of variables to continue working the the same notebook.
+
+Next we will test our agent
+
+```python
+%store kb_id
+%store knowledge_base_name
+%store knowledge_base_description
+%store kb_policy_name
+%store bucket_name
+%store knowledge_base_name
+```
+
+### 03_invoke_agent.ipynb
+
+# Agents for Amazon Bedrock - Testing Agent Invocation
+
+This notebook provides sample code for testing the agent invocation using the [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-agent-runtime.html) client for `bedrock-agent-runtime`
+
+### Use Case
+Now that we've created the agent and attached the knowledge base to it, we will use the runtime client to invoke the agent with different queries. The boto3 sdk for agent is divided into two clients: `bedrock-agent` and `bedrock-agent-runtime`. The `bedrock-agent` client is responsible for the functionalities to create, update, delete and/or prepare an agent or a knowledge base. While the `bedrock-agent-runtime` is responsible for invoke an agent (with the [`invoke_agent`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-agent-runtime/client/invoke_agent.html) API) and retrieve documents from a knowledge base (with the [`retrieve`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-agent-runtime/client/retrieve.html) and [`retrieve_and_generate`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-agent-runtime/client/retrieve_and_generate.html) APIs). This notebook will focus on the runtime invocation of the agent created in the previous notebooks. We will use the `invoke_agent` API.
+
+
+
+### Notebook Walkthrough
+
+In this notebook we will:
+- Retrieve the saved variables from the previous notebook
+- Invoke agent with a new session using Knowledge Bases and Action Groups
+- Invoke agent with an existent session
+- Invoke agent with prompt attributes
+- Invoke agent with trace enabled
+- Invoke agent with different languages for the request
+
+
+### Next Steps: 
+In the next lab, we will clean up the resources created
+
+### Pre-requisites
+
+Before starting this lab, we need to load the variables that we stored in the previous notebook.
+
+```python
+%store -r
+```
+
+#### Importing required packages and initiate variables
+
+Let's also import the necessary packages, setup the logging and initiate the boto3 client for `bedrock-agent-runtime`. We are also initiating the client for `dynamodb` as a support functionality to check that the tasks were performed correctly by our agent
+
+```python
+import boto3
+import logging
+import pprint
+import json
+import pandas as pd
+from agent import invoke_agent_helper
+logging.basicConfig(format='[%(asctime)s] p%(process)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
+bedrock_agent_runtime_client = boto3.client('bedrock-agent-runtime')
+dynamodb = boto3.resource('dynamodb')
+```
+
+#### Create support invokeAgent function
+
+Let's again use the same support function called `invoke_agent_helper` from `agents.py` to allow us to invoke the agent with or without trace enabled and with or without session state. 
+
+This function allows the user to send a `query` to the agent with a `session_id`. The user can then decide to enable trace or not using the `enable_trace` boolean variable and to pass a session state as a dictionary via the `session_state` variable.
+
+If a new `session_id` is provided, the agent will create a new conversation without previous context. If the same `session_id` is reused, the conversation history related to that session id is made available to the agent.
+
+If the `enable_trace` is set to `True`, each response from the agent is accompanied by a *trace* that details the step being orchestrated by the agent. It allows you to follow the agent's (reasoning via Chain of Thoughts prompting) that led to the final response at that point of the conversation.
+
+Finally, you can also pass a session context using the `session_state` parameter. The session state allows you to share the following information with the agent:
+- **`sessionAttributes`**: attributes that persist over a session between the user and the agent. All invokeAgent calls with the same session_id belong to the same sesison and will have the sessionAttributes shared with them as long as the session time limit has not being surpassed and the user has not ended the session. The sessionAttributes are available in the lambda function but are **not** added to the agent's prompt. As a result, you can only use session attributes if your lambda function can handle them. You can find more examples of using a session attribute [here](https://github.com/aws-samples/amazon-bedrock-samples/tree/main/agents-for-bedrock/features-examples/06-prompt-and-session-attributes). It is also a good pattern to implement fine-grained access control for certain APIs using the lambda function integration. You can find an example for it [here](https://github.com/aws-samples/amazon-bedrock-samples/tree/main/agents-for-bedrock/features-examples/09-fine-grained-access-permissions)
+- **`promptSessionAttributes`**: attributes that persist over a single invokeAgent call. Prompt attributes are added to the prompt and to the lambda function. You can also use the `$prompt_session_attributes$` placeholder when editing the orchestration base prompt.
+- **`invocationId`**: The id returned by the agent in the [ReturnControlPayload](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_ReturnControlPayload.html) object in the returnControl field of the InvokeAgent response. This field is required if passing the answer of a Return of Control invocation. You can find an example of how to use it [here](https://github.com/aws-samples/amazon-bedrock-samples/tree/main/agents-for-bedrock/features-examples/03-create-agent-with-return-of-control).
+- **`returnControlInvocationResults`**: the results obtained from invoking the action outside of agents for Amazon Bedrock.  This field is required if passing the answer of a Return of Control invocation. You can find an example of how to use it [here](https://github.com/aws-samples/amazon-bedrock-samples/tree/main/agents-for-bedrock/features-examples/03-create-agent-with-return-of-control).
+
+#### Create support selectAllFromDynamoDB function
+
+We will also create the support function called `selectAllFromDynamoDB` to select all data in the dynamoDB table `restaurant_bookings`. This function will be used to validate our agent's behaviour
+
+```python
+def selectAllFromDynamodb():
+    # Get the table object
+    table = dynamodb.Table(table_name)
+
+    # Scan the table and get all items
+    response = table.scan()
+    items = response['Items']
+
+    # Handle pagination if necessary
+    while 'LastEvaluatedKey' in response:
+        response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+        items.extend(response['Items'])
+
+    items = pd.DataFrame(items)
+    return items
+```
+
+```python
+# test function invocation
+items = selectAllFromDynamodb()
+items
+```
+
+### Invoking agent with a new session id
+Let's first use the `InvokeAgent` function to query the Knowledge Base with the agent without previous context
+
+```python
+%%time
+import uuid
+session_id:str = str(uuid.uuid1())
+query = "What is in the childrens menu?"
+response = invoke_agent_helper(query, session_id, agent_id, alias_id)
+print(response)
+```
+
+### Invoking agent with existent session id
+
+Next we can use the context to ask a follow up question. To do so, we use the same `session_id` with the `invokeAgent` function
+
+```python
+%%time
+query = "Which of those options are vegetarian?"
+response = invoke_agent_helper(query, session_id, agent_id, alias_id)
+print(response)
+```
+
+As you can see, the agent knows that we are talking about the children's menu.
+
+### Invoking agent using action group
+
+Now let's use our agent to make a reservation. By doing so, we will require the agent to execute an action from our action group to create a new reservation.
+
+```python
+%%time
+query = "Hi, I am Maria. I want to create a booking for 4 people, at 9pm on the 5th of May 2024."
+response = invoke_agent_helper(query, session_id, agent_id, alias_id)
+print(response)
+```
+
+Let's double check that the data was properly added to the dynamoDB table
+
+```python
+selectAllFromDynamodb()
+```
+
+Great! We've used our agent to do create a reservation. However, often when booking tables in restaurants we are already logged in to a system that know our names. How great would it be if our agent would know it as well?
+
+To do so, we can use the session context to provide some attributes to our prompt. In this case we will provide it directly to the prompt using the [promptSessionAttributes](https://docs.aws.amazon.com/bedrock/latest/userguide/agents-session-state.html) parameter. Let's also start a new session id so that our agent does not memorize our name.
+
+```python
+%%time
+session_id:str = str(uuid.uuid1())
+query = "I want to create a booking for 2 people, at 8pm on the 6th of May 2024."
+session_state = {
+    "promptSessionAttributes": {
+        "name": "John"
+    }
+}
+response = invoke_agent_helper(query, session_id, agent_id, alias_id, session_state=session_state)
+print(response)
+```
+
+Again let's validate the the correct data was added to dynamoDB
+
+```python
+selectAllFromDynamodb()
+```
+
+We can also validate the data using our agent's session information since the agent knows the booking id to invoke the get booking details function
+
+```python
+%%time
+query = "Get the details for the last booking created"
+booking_id = invoke_agent_helper(query, session_id, agent_id, alias_id)
+print(booking_id)
+```
+
+#### Deleting booking created
+
+Let's also test the delete booking functionality by deleting the last created booking id
+
+```python
+%%time
+query = f"I want to delete the booking."
+response = invoke_agent_helper(query, session_id, agent_id, alias_id)
+print(response)
+```
+
+And we confirm that the booking has also been deleted from the dynamoDB table
+
+```python
+selectAllFromDynamodb()
+```
+
+#### Invoking agent using promptSessionAttributes to handle temporal information
+
+With real-life applications, context is really important. We want to make reservations considering the current date and the days sorounding it. Agents for Amazon Bedrock also allow you to provide temporal context for the agent with the prompt attributes. Let's test it with a reservation for tomorrow
+
+```python
+# retrieving today
+from datetime import datetime
+today = datetime.today().strftime('%b-%d-%Y')
+today
+```
+
+```python
+%%time
+# reserving a table for tomorrow
+session_id:str = str(uuid.uuid1())
+query = "I want to create a booking for 2 people, at 8pm tomorrow."
+session_state = {
+    "promptSessionAttributes": {
+        "name": "John",
+        "today": today
+    }
+}
+response = invoke_agent_helper(query, session_id, agent_id, alias_id, session_state=session_state)
+print(response)
+```
+
+And now to confirm that everything got added properly, let's retrieve the details of the last booking 
+
+```python
+%%time
+query = "Could you get the details for the last booking created?"
+booking_id = invoke_agent_helper(query, session_id, agent_id, alias_id)
+print(booking_id)
+```
+
+#### Asking the agent for food recomendations
+
+Another good use case for our agent, is to use its reasoning capabilities to ask for some food recommendation. Let's look at a couple of examples for it
+
+```python
+%%time
+session_id:str = str(uuid.uuid1())
+query = "What do you have for kids that don't like fries?"
+response = invoke_agent_helper(query, session_id, agent_id, alias_id)
+print(response)
+```
+
+```python
+%%time
+session_id:str = str(uuid.uuid1())
+query = "I am allergic to shrimps. What can I eat at this restaurant?"
+response = invoke_agent_helper(query, session_id, agent_id, alias_id)
+print(response)
+```
+
+### Invoking agent with trace enabled
+
+We can also invoke our agent with the trace enabled to produce the details of each step being orchestrated by the Agent. Let's see all the steps executed when checking for documents in the knowledge base
+
+```python
+%%time
+session_id:str = str(uuid.uuid1())
+query = "What are the desserts on the adult menu?"
+response = invoke_agent_helper(query, session_id, agent_id, alias_id, enable_trace=True)
+print(response)
+```
+
+### Invoking agent with different prompt languages
+
+The last feature that we will highlight in this notebook is the ability of LLM models to handle inputs in different languages. We've only implemented our agent in English, but wouldn't it be great if it could also handle other languages?
+
+Good news is that it can! This is due to the LLM multi-language capabilities. And the best part is that we don't need to change anything in the agent and it will even going to respond in the requested language.
+
+Let's try a couple of queries!
+
+```python
+%%time
+# Invoking agents in spanish
+session_id:str = str(uuid.uuid1())
+query = "¿Podrías reservar una mesa para dos 25/07/2024 a las 19:30"
+session_state = {
+    "promptSessionAttributes": {
+        "Nombre": "Gabriela"
+    }
+}
+response = invoke_agent_helper(query, session_id, agent_id, alias_id, session_state=session_state)
+print(response)
+```
+
+```python
+%%time
+# Invoking agents in german
+session_id:str = str(uuid.uuid1())
+query = "Könnten Sie heute Abend einen Tisch für zwei reservieren? Um 19:30 Uhr"
+session_state = {
+    "promptSessionAttributes": {
+        "Name": "Julian",
+        "Heute": today
+    }
+}
+response = invoke_agent_helper(query, session_id, agent_id, alias_id, session_state=session_state)
+print(response)
+```
+
+Last, let's check our dynamoDB to see all the bookings available
+
+```python
+selectAllFromDynamodb()
+```
+
+### Next Steps
+
+Next we will delete all the resources created
+
+### 04_clean_up_agent_resources.ipynb
+
+# Agents for Amazon Bedrock - Cleaning up resources
+
+Do not run this notebook if you are planning to use the agent and knowledge base that you created.
+If you only wanted to try out creating the Agent and Knowledge Base using SDK, then please make sure to delete all the resources that were created as you will be incurred cost for storing documents in OSS index and in the DynamoDB table.
+
+```python
+%store -r
+```
+
+### Importing the support functions
+
+```python
+from agent import delete_agent_roles_and_policies, clean_up_resources
+from knowledge_base import KnowledgeBasesForAmazonBedrock
+```
+
+Cleaning up agent's resources
+
+```python
+clean_up_resources(
+    table_name, lambda_function, lambda_function_name, agent_action_group_response, agent_functions, 
+    agent_id, kb_id, alias_id
+)
+```
+
+Deleting Agent's roles and policies
+
+```python
+# Delete the agent roles and policies
+delete_agent_roles_and_policies(agent_name, kb_policy_name)
+```
+
+Deleting Knowledge Base
+
+```python
+kb = KnowledgeBasesForAmazonBedrock()
+kb.delete_kb(knowledge_base_name, delete_s3_bucket=True, delete_iam_roles_and_policies=True)
+```
+
+### Next Steps
+
+Next we will discuss some Open Source examples
+
+### 05_bonus_inline_agents.ipynb
+
+## Building Dynamic AI Assistants with Amazon Bedrock Inline Agents
+
+Before we dive into creating and using persistent agents, we'll walk through the process of setting up and invoking an inline agent, showcasing its flexibility and power in creating dynamic AI assistants. By following our progressive approach, you will gain a comprehensive understanding of how to use inline agents for various use cases and complexity levels. Throughout a single interactive conversation, we will demonstrate how the agent can be enhanced `on the fly` with new tools and instructions while maintaining context of our ongoing discussion.
+
+We'll build a simple Inline Agent with a code interpreter.
+
+## What are Inline Agents?
+
+[Inline agents](https://docs.aws.amazon.com/bedrock/latest/userguide/agents-create-inline.html) are a powerful feature of Amazon Bedrock that allow developers to create flexible and adaptable AI assistants. 
+
+Unlike traditional static agents, inline agents can be dynamically configured at runtime, enabling real time adjustments to their behavior, capabilities, and knowledge base.
+
+Key features of inline agents include:
+
+1. **Dynamic configuration**: Modify the agent's instructions, action groups, and other parameters on the fly.
+2. **Flexible integration**: Easily incorporate external APIs and services as needed for each interaction.
+3. **Contextual adaptation**: Adjust the agent's responses based on user roles, preferences, or specific scenarios.
+
+## Why Use Inline Agents?
+
+Inline agents offer several advantages for building AI applications:
+
+1. **Rapid prototyping**: Quickly experiment with different configurations without redeploying your application.
+2. **Personalization**: Tailor the agent's capabilities to individual users or use cases in real time.
+3. **Scalability**: Efficiently manage a single agent that can adapt to multiple roles or functions.
+4. **Cost effectiveness**: Optimize resource usage by dynamically selecting only the necessary tools and knowledge for each interaction.
+
+## Prerequisites
+
+Before you begin, make sure that you have:
+
+1. An active AWS account with access to Amazon Bedrock.
+2. Necessary permissions to create and invoke inline agents.
+3. Be sure to complete additonal prerequisites, visit [Amazon Bedrock Inline Agent prerequisites documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/inline-agent-prereq.html) to learn more.
+
+### Installing prerequisites
+Let's begin with installing the required packages. This step is important as you need `boto3` version `1.35.68` or later to use inline agents.
+
+```python
+# uncomment to install the required python packages
+%pip install --upgrade boto3 botocore
+```
+
+```python
+# # restart kernel
+from IPython.core.display import HTML
+HTML("<script>Jupyter.notebook.kernel.restart()</script>")
+```
+
+## Setup and Imports
+
+First, let's import the necessary libraries and set up our Bedrock client.
+
+```python
+import os
+import json
+from pprint import pprint
+import boto3
+from datetime import datetime
+import random
+import pprint
+from termcolor import colored
+from rich.console import Console
+from rich.markdown import Markdown
+
+session = boto3.session.Session()
+region = session.region_name
+
+# Runtime Endpoints
+bedrock_rt_client = boto3.client(
+    "bedrock-agent-runtime",
+    region_name=region
+)
+
+sts_client = boto3.client("sts")
+account_id = sts_client.get_caller_identity()["Account"]
+
+# To manage session id:
+random_int = random.randint(1,100000)
+```
+
+## Configuring the Inline Agent
+
+Next, we'll set up the basic configuration for our Amazon Bedrock Inline Agent. This includes specifying the foundation model, session management, and basic instructions.
+
+```python
+# change model id as needed:
+model_id = "anthropic.claude-3-sonnet-20240229-v1:0"
+
+sessionId = f'custom-session-id-{random_int}'
+endSession = False
+enableTrace = True
+
+# customize instructions of inline agent:
+agent_instruction = """You are a helpful AI assistant helping Octank Inc employees with their questions and processes. 
+You write short and direct responses while being cheerful. You have access to python coding environment that helps you extend your capabilities."""
+```
+
+## Basic Inline Agent Invocation
+
+Let's start by invoking a simple inline agent with just the foundation model and basic instructions.
+
+```python
+# prepare request parameters before invoking inline agent
+request_params = {
+    "instruction": agent_instruction,
+    "foundationModel": model_id,
+    "sessionId": sessionId,
+    "endSession": endSession,
+    "enableTrace": enableTrace,
+}
+
+# define code interpreter tool
+code_interpreter_tool = {
+    "actionGroupName": "UserInputAction",
+    "parentActionGroupSignature": "AMAZON.CodeInterpreter"
+}
+
+# add the tool to request parameter of inline agent
+request_params["actionGroups"] = [code_interpreter_tool]
+
+# enable traces
+request_params["enableTrace"] = True
+```
+
+```python
+# enter the question you want the inline agent to answer
+request_params['inputText'] = 'what is the time right now in pacific timezone?'
+```
+
+### Invoking a simple Inline Agent
+
+We'll send a request to the agent asking it to perform a simple calculation or code execution task. This will showcase how the agent can interpret and run code on the fly.
+
+To do so, we will use the [InvokeInlineAgent](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_InvokeInlineAgent.html) API via boto3 `bedrock-agent-runtime` client.
+
+Our function `invoke_inline_agent_helper` also helps us processing the agent trace request and format it for easier readibility. You do not have to use this function in your system, but it will make it easier to observe the code used by code interpreter, the function invocations and the knowledge base content.
+
+We also provide the metrics for the agent invocation time and the input and output tokens
+
+```python
+def invoke_inline_agent_helper(client, request_params, trace_level="core"):
+    _time_before_call = datetime.now()
+
+    _agent_resp = client.invoke_inline_agent(
+        **request_params
+    )
+
+    if request_params["enableTrace"]:
+        if trace_level == "all":
+            print(f"invokeAgent API response object: {_agent_resp}")
+        else:
+            print(
+                f"invokeAgent API request ID: {_agent_resp['ResponseMetadata']['RequestId']}"
+            )
+            session_id = request_params["sessionId"]
+            print(f"invokeAgent API session ID: {session_id}")
+
+    # Return error message if invoke was unsuccessful
+    if _agent_resp["ResponseMetadata"]["HTTPStatusCode"] != 200:
+        _error_message = f"API Response was not 200: {_agent_resp}"
+        if request_params["enableTrace"] and trace_level == "all":
+            print(_error_message)
+        return _error_message
+
+    _total_in_tokens = 0
+    _total_out_tokens = 0
+    _total_llm_calls = 0
+    _orch_step = 0
+    _sub_step = 0
+    _trace_truncation_lenght = 300
+    _time_before_orchestration = datetime.now()
+
+    _agent_answer = ""
+    _event_stream = _agent_resp["completion"]
+
+    try:
+        for _event in _event_stream:
+            _sub_agent_alias_id = None
+
+            if "chunk" in _event:
+                _data = _event["chunk"]["bytes"]
+                _agent_answer = _data.decode("utf8")
+
+            if "trace" in _event and request_params["enableTrace"]:
+                if "failureTrace" in _event["trace"]["trace"]:
+                    print(
+                        colored(
+                            f"Agent error: {_event['trace']['trace']['failureTrace']['failureReason']}",
+                            "red",
+                        )
+                    )
+
+                if "orchestrationTrace" in _event["trace"]["trace"]:
+                    _orch = _event["trace"]["trace"]["orchestrationTrace"]
+
+                    if trace_level in ["core", "outline"]:
+                        if "rationale" in _orch:
+                            _rationale = _orch["rationale"]
+                            print(colored(f"{_rationale['text']}", "blue"))
+
+                        if "invocationInput" in _orch:
+                            # NOTE: when agent determines invocations should happen in parallel
+                            # the trace objects for invocation input still come back one at a time.
+                            _input = _orch["invocationInput"]
+                            print(_input)
+
+                            if "actionGroupInvocationInput" in _input:
+                                if 'function' in _input['actionGroupInvocationInput']:
+                                    tool = _input['actionGroupInvocationInput']['function']
+                                elif 'apiPath' in _input['actionGroupInvocationInput']:
+                                    tool = _input['actionGroupInvocationInput']['apiPath']
+                                else:
+                                    tool = 'undefined'
+                                if trace_level == "outline":
+                                    print(
+                                        colored(
+                                            f"Using tool: {tool}",
+                                            "magenta",
+                                        )
+                                    )
+                                else:
+                                    print(
+                                        colored(
+                                            f"Using tool: {tool} with these inputs:",
+                                            "magenta",
+                                        )
+                                    )
+                                    if (
+                                        len(
+                                            _input["actionGroupInvocationInput"][
+                                                "parameters"
+                                            ]
+                                        )
+                                        == 1
+                                    ) and (
+                                        _input["actionGroupInvocationInput"][
+                                            "parameters"
+                                        ][0]["name"]
+                                        == "input_text"
+                                    ):
+                                        print(
+                                            colored(
+                                                f"{_input['actionGroupInvocationInput']['parameters'][0]['value']}",
+                                                "magenta",
+                                            )
+                                        )
+                                    else:
+                                        print(
+                                            colored(
+                                                f"{_input['actionGroupInvocationInput']['parameters']}\n",
+                                                "magenta",
+                                            )
+                                        )
+
+                            elif "codeInterpreterInvocationInput" in _input:
+                                if trace_level == "outline":
+                                    print(
+                                        colored(
+                                            f"Using code interpreter", "magenta"
+                                        )
+                                    )
+                                else:
+                                    console = Console()
+                                    _gen_code = _input[
+                                        "codeInterpreterInvocationInput"
+                                    ]["code"]
+                                    _code = f"```python\n{_gen_code}\n```"
+
+                                    console.print(
+                                        Markdown(f"**Generated code**\n{_code}")
+                                    )
+
+                        if "observation" in _orch:
+                            if trace_level == "core":
+                                _output = _orch["observation"]
+                                if "actionGroupInvocationOutput" in _output:
+                                    print(
+                                        colored(
+                                            f"--tool outputs:\n{_output['actionGroupInvocationOutput']['text'][0:_trace_truncation_lenght]}...\n",
+                                            "magenta",
+                                        )
+                                    )
+
+                                if "agentCollaboratorInvocationOutput" in _output:
+                                    _collab_name = _output[
+                                        "agentCollaboratorInvocationOutput"
+                                    ]["agentCollaboratorName"]
+                                    _collab_output_text = _output[
+                                        "agentCollaboratorInvocationOutput"
+                                    ]["output"]["text"][0:_trace_truncation_lenght]
+                                    print(
+                                        colored(
+                                            f"\n----sub-agent {_collab_name} output text:\n{_collab_output_text}...\n",
+                                            "magenta",
+                                        )
+                                    )
+
+                                if "finalResponse" in _output:
+                                    print(
+                                        colored(
+                                            f"Final response:\n{_output['finalResponse']['text'][0:_trace_truncation_lenght]}...",
+                                            "cyan",
+                                        )
+                                    )
+
+
+                    if "modelInvocationOutput" in _orch:
+                        _orch_step += 1
+                        _sub_step = 0
+                        print(colored(f"---- Step {_orch_step} ----", "green"))
+
+                        _llm_usage = _orch["modelInvocationOutput"]["metadata"][
+                            "usage"
+                        ]
+                        _in_tokens = _llm_usage["inputTokens"]
+                        _total_in_tokens += _in_tokens
+
+                        _out_tokens = _llm_usage["outputTokens"]
+                        _total_out_tokens += _out_tokens
+
+                        _total_llm_calls += 1
+                        _orch_duration = (
+                            datetime.now() - _time_before_orchestration
+                        )
+
+                        print(
+                            colored(
+                                f"Took {_orch_duration.total_seconds():,.1f}s, using {_in_tokens+_out_tokens} tokens (in: {_in_tokens}, out: {_out_tokens}) to complete prior action, observe, orchestrate.",
+                                "yellow",
+                            )
+                        )
+
+                        # restart the clock for next step/sub-step
+                        _time_before_orchestration = datetime.now()
+
+                elif "preProcessingTrace" in _event["trace"]["trace"]:
+                    _pre = _event["trace"]["trace"]["preProcessingTrace"]
+                    if "modelInvocationOutput" in _pre:
+                        _llm_usage = _pre["modelInvocationOutput"]["metadata"][
+                            "usage"
+                        ]
+                        _in_tokens = _llm_usage["inputTokens"]
+                        _total_in_tokens += _in_tokens
+
+                        _out_tokens = _llm_usage["outputTokens"]
+                        _total_out_tokens += _out_tokens
+
+                        _total_llm_calls += 1
+
+                        print(
+                            colored(
+                                "Pre-processing trace, agent came up with an initial plan.",
+                                "yellow",
+                            )
+                        )
+                        print(
+                            colored(
+                                f"Used LLM tokens, in: {_in_tokens}, out: {_out_tokens}",
+                                "yellow",
+                            )
+                        )
+
+                elif "postProcessingTrace" in _event["trace"]["trace"]:
+                    _post = _event["trace"]["trace"]["postProcessingTrace"]
+                    if "modelInvocationOutput" in _post:
+                        _llm_usage = _post["modelInvocationOutput"]["metadata"][
+                            "usage"
+                        ]
+                        _in_tokens = _llm_usage["inputTokens"]
+                        _total_in_tokens += _in_tokens
+
+                        _out_tokens = _llm_usage["outputTokens"]
+                        _total_out_tokens += _out_tokens
+
+                        _total_llm_calls += 1
+                        print(colored("Agent post-processing complete.", "yellow"))
+                        print(
+                            colored(
+                                f"Used LLM tokens, in: {_in_tokens}, out: {_out_tokens}",
+                                "yellow",
+                            )
+                        )
+
+                if trace_level == "all":
+                    print(json.dumps(_event["trace"], indent=2))
+
+            if "files" in _event.keys() and request_params["enableTrace"]:
+                console = Console()
+                files_event = _event["files"]
+                console.print(Markdown("**Files**"))
+
+                files_list = files_event["files"]
+                for this_file in files_list:
+                    print(f"{this_file['name']} ({this_file['type']})")
+                    file_bytes = this_file["bytes"]
+
+                    # save bytes to file, given the name of file and the bytes
+                    file_name = os.path.join("output", this_file["name"])
+                    with open(file_name, "wb") as f:
+                        f.write(file_bytes)
+
+        if request_params["enableTrace"]:
+            duration = datetime.now() - _time_before_call
+
+            if trace_level in ["core", "outline"]:
+                print(
+                    colored(
+                        f"Agent made a total of {_total_llm_calls} LLM calls, "
+                        + f"using {_total_in_tokens+_total_out_tokens} tokens "
+                        + f"(in: {_total_in_tokens}, out: {_total_out_tokens})"
+                        + f", and took {duration.total_seconds():,.1f} total seconds",
+                        "yellow",
+                    )
+                )
+
+            if trace_level == "all":
+                print(f"Returning agent answer as: {_agent_answer}")
+
+        return _agent_answer
+
+    except Exception as e:
+        print(f"Caught exception while processing input to invokeAgent:\n")
+        input_text = request_params["inputText"]
+        print(f"  for input text:\n{input_text}\n")
+        print(
+            f"  request ID: {_agent_resp['ResponseMetadata']['RequestId']}, retries: {_agent_resp['ResponseMetadata']['RetryAttempts']}\n"
+        )
+        print(f"Error: {e}")
+        raise Exception("Unexpected exception: ", e)
+```
+
+```python
+invoke_inline_agent_helper(bedrock_rt_client, request_params, trace_level="core")
+```
+
+## Conclusion
+
+This notebook has demonstrated the key aspects of using the Amazon Bedrock Inline Agents API:
+
+1. Basic agent invocation
+
+For more advance topics such as the following, please take a look at the deep dive [agents workshop](https://catalog.workshops.aws/agents-for-amazon-bedrock/en-US):
+
+2. Incorporating knowledge bases
+3. Adding custom action groups
+4. Implementing guardrails
+
+
+
+```python
+
+```
+
+### agent.py
+
+```python
+import boto3
+import json
+import time
+import zipfile
+import logging
+import pprint
+from io import BytesIO
+
+iam_client = boto3.client('iam')
+sts_client = boto3.client('sts')
+session = boto3.session.Session()
+region = session.region_name
+account_id = sts_client.get_caller_identity()["Account"]
+dynamodb_client = boto3.client('dynamodb')
+dynamodb_resource = boto3.resource('dynamodb')
+lambda_client = boto3.client('lambda')
+bedrock_agent_client = boto3.client('bedrock-agent')
+bedrock_agent_runtime_client = boto3.client('bedrock-agent-runtime')
+logging.basicConfig(format='[%(asctime)s] p%(process)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+def create_dynamodb(table_name):
+    try:
+        table = dynamodb_resource.create_table(
+            TableName=table_name,
+            KeySchema=[
+                {
+                    'AttributeName': 'booking_id',
+                    'KeyType': 'HASH'
+                }
+            ],
+            AttributeDefinitions=[
+                {
+                    'AttributeName': 'booking_id',
+                    'AttributeType': 'S'
+                }
+            ],
+            BillingMode='PAY_PER_REQUEST'  # Use on-demand capacity mode
+        )
+
+        # Wait for the table to be created
+        print(f'Creating table {table_name}...')
+        table.wait_until_exists()
+        print(f'Table {table_name} created successfully!')
+    except dynamodb_client.exceptions.ResourceInUseException:
+        print(f'Table {table_name} already exists, skipping table creation step')
+
+
+def create_lambda(lambda_function_name, lambda_iam_role):
+    # add to function
+
+    # Package up the lambda function code
+    s = BytesIO()
+    z = zipfile.ZipFile(s, 'w')
+    z.write("lambda_function.py")
+    z.close()
+    zip_content = s.getvalue()
+    try:
+        # Create Lambda Function
+        lambda_function = lambda_client.create_function(
+            FunctionName=lambda_function_name,
+            Runtime='python3.12',
+            Timeout=60,
+            Role=lambda_iam_role['Role']['Arn'],
+            Code={'ZipFile': zip_content},
+            Handler='lambda_function.lambda_handler'
+        )
+    except lambda_client.exceptions.ResourceConflictException:
+        print("Lambda function already exists, retrieving it")
+        lambda_function = lambda_client.get_function(
+            FunctionName=lambda_function_name
+        )
+        lambda_function = lambda_function['Configuration']
+
+    return lambda_function
+
+
+def create_lambda_role(agent_name, dynamodb_table_name):
+    lambda_function_role = f'{agent_name}-lambda-role'
+    dynamodb_access_policy_name = f'{agent_name}-dynamodb-policy'
+    # Create IAM Role for the Lambda function
+    try:
+        assume_role_policy_document = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": "lambda.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+
+        assume_role_policy_document_json = json.dumps(assume_role_policy_document)
+
+        lambda_iam_role = iam_client.create_role(
+            RoleName=lambda_function_role,
+            AssumeRolePolicyDocument=assume_role_policy_document_json
+        )
+
+        # Pause to make sure role is created
+        time.sleep(10)
+    except iam_client.exceptions.EntityAlreadyExistsException:
+        lambda_iam_role = iam_client.get_role(RoleName=lambda_function_role)
+
+    # Attach the AWSLambdaBasicExecutionRole policy
+    iam_client.attach_role_policy(
+        RoleName=lambda_function_role,
+        PolicyArn='arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+    )
+
+    # Create a policy to grant access to the DynamoDB table
+    dynamodb_access_policy = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:DeleteItem"
+                ],
+                "Resource": "arn:aws:dynamodb:{}:{}:table/{}".format(
+                    region, account_id, dynamodb_table_name
+                )
+            }
+        ]
+    }
+
+    # Create the policy
+    dynamodb_access_policy_json = json.dumps(dynamodb_access_policy)
+    try:
+        dynamodb_access_policy = iam_client.create_policy(
+            PolicyName=dynamodb_access_policy_name,
+            PolicyDocument=dynamodb_access_policy_json
+        )
+    except iam_client.exceptions.EntityAlreadyExistsException:
+        dynamodb_access_policy = iam_client.get_policy(
+            PolicyArn=f"arn:aws:iam::{account_id}:policy/{dynamodb_access_policy_name}"
+        )
+
+    # Attach the policy to the Lambda function's role
+    iam_client.attach_role_policy(
+        RoleName=lambda_function_role,
+        PolicyArn=dynamodb_access_policy['Policy']['Arn']
+    )
+    return lambda_iam_role
+
+
+def invoke_agent_helper(query, session_id, agent_id, alias_id, enable_trace=False, session_state=None):
+    end_session: bool = False
+    if not session_state:
+        session_state = {}
+
+    # invoke the agent API
+    agent_response = bedrock_agent_runtime_client.invoke_agent(
+        inputText=query,
+        agentId=agent_id,
+        agentAliasId=alias_id,
+        sessionId=session_id,
+        enableTrace=enable_trace,
+        endSession=end_session,
+        sessionState=session_state
+    )
+
+    if enable_trace:
+        logger.info(pprint.pprint(agent_response))
+
+    event_stream = agent_response['completion']
+    try:
+        for event in event_stream:
+            if 'chunk' in event:
+                data = event['chunk']['bytes']
+                if enable_trace:
+                    logger.info(f"Final answer ->\n{data.decode('utf8')}")
+                agent_answer = data.decode('utf8')
+                return agent_answer
+                # End event indicates that the request finished successfully
+            elif 'trace' in event:
+                if enable_trace:
+                    logger.info(json.dumps(event['trace'], indent=2, default=str))
+            else:
+                raise Exception("unexpected event.", event)
+    except Exception as e:
+        raise Exception("unexpected event.", e)
+
+
+def create_agent_role(agent_name, agent_foundation_model, kb_id=None):
+    agent_bedrock_allow_policy_name = f"{agent_name}-ba"
+    agent_role_name = f'AmazonBedrockExecutionRoleForAgents_{agent_name}'
+    # Create IAM policies for agent
+    statements = [
+        {
+            "Sid": "AmazonBedrockAgentBedrockFoundationModelPolicy",
+            "Effect": "Allow",
+            "Action": "bedrock:InvokeModel",
+            "Resource": [
+                f"arn:aws:bedrock:{region}::foundation-model/{agent_foundation_model}"
+            ]
+        }
+    ]
+    # add Knowledge Base retrieve and retrieve and generate permissions if agent has KB attached to it
+    if kb_id:
+        statements.append(
+            {
+                "Sid": "QueryKB",
+                "Effect": "Allow",
+                "Action": [
+                    "bedrock:Retrieve",
+                    "bedrock:RetrieveAndGenerate"
+                ],
+                "Resource": [
+                    f"arn:aws:bedrock:{region}:{account_id}:knowledge-base/{kb_id}"
+                ]
+            }
+        )
+
+    bedrock_agent_bedrock_allow_policy_statement = {
+        "Version": "2012-10-17",
+        "Statement": statements
+    }
+
+    bedrock_policy_json = json.dumps(bedrock_agent_bedrock_allow_policy_statement)
+    try:
+        agent_bedrock_policy = iam_client.create_policy(
+            PolicyName=agent_bedrock_allow_policy_name,
+            PolicyDocument=bedrock_policy_json
+        )
+    except iam_client.exceptions.EntityAlreadyExistsException:
+        agent_bedrock_policy = iam_client.get_policy(
+            PolicyArn=f"arn:aws:iam::{account_id}:policy/{agent_bedrock_allow_policy_name}"
+        )
+                    
+    # Create IAM Role for the agent and attach IAM policies
+    assume_role_policy_document = {
+        "Version": "2012-10-17",
+        "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "bedrock.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+        }]
+    }
+
+    assume_role_policy_document_json = json.dumps(assume_role_policy_document)
+    try:
+        agent_role = iam_client.create_role(
+            RoleName=agent_role_name,
+            AssumeRolePolicyDocument=assume_role_policy_document_json
+        )
+
+        # Pause to make sure role is created
+        time.sleep(10)
+    except iam_client.exceptions.EntityAlreadyExistsException:
+        agent_role = iam_client.get_role(
+            RoleName=agent_role_name,
+        )
+
+    iam_client.attach_role_policy(
+        RoleName=agent_role_name,
+        PolicyArn=agent_bedrock_policy['Policy']['Arn']
+    )
+    return agent_role
+
+
+def delete_agent_roles_and_policies(agent_name, kb_policy_name):
+    agent_bedrock_allow_policy_name = f"{agent_name}-ba"
+    agent_role_name = f'AmazonBedrockExecutionRoleForAgents_{agent_name}'
+    dynamodb_access_policy_name = f'{agent_name}-dynamodb-policy'
+    lambda_function_role = f'{agent_name}-lambda-role'
+
+    for policy in [agent_bedrock_allow_policy_name, kb_policy_name]:
+        try:
+            iam_client.detach_role_policy(
+                RoleName=agent_role_name,
+                PolicyArn=f'arn:aws:iam::{account_id}:policy/{policy}'
+            )
+        except Exception as e:
+            print(f"Could not detach {policy} from {agent_role_name}")
+            print(e)
+
+    for policy in [dynamodb_access_policy_name]:
+        try:
+            iam_client.detach_role_policy(
+                RoleName=lambda_function_role,
+                PolicyArn=f'arn:aws:iam::{account_id}:policy/{policy}'
+            )
+        except Exception as e:
+            print(f"Could not detach {policy} from {lambda_function_role}")
+            print(e)
+
+    try:
+        iam_client.detach_role_policy(
+            RoleName=lambda_function_role,
+            PolicyArn='arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+        )
+    except Exception as e:
+        print(f"Could not detach AWSLambdaBasicExecutionRole from {lambda_function_role}")
+        print(e)
+
+    for role_name in [agent_role_name, lambda_function_role]:
+        try:
+            iam_client.delete_role(
+                RoleName=role_name
+            )
+        except Exception as e:
+            print(f"Could not delete role {role_name}")
+            print(e)
+
+    for policy in [agent_bedrock_allow_policy_name, kb_policy_name, dynamodb_access_policy_name]:
+        try:
+            iam_client.delete_policy(
+                PolicyArn=f'arn:aws:iam::{account_id}:policy/{policy}'
+            )
+        except Exception as e:
+            print(f"Could not delete policy {policy}")
+            print(e)
+
+
+def clean_up_resources(
+        table_name, lambda_function, lambda_function_name, agent_action_group_response, agent_functions,
+        agent_id, kb_id, alias_id
+):
+    action_group_id = agent_action_group_response['agentActionGroup']['actionGroupId']
+    action_group_name = agent_action_group_response['agentActionGroup']['actionGroupName']
+    # Delete Agent Action Group, Agent Alias, and Agent
+    try:
+        bedrock_agent_client.update_agent_action_group(
+            agentId=agent_id,
+            agentVersion='DRAFT',
+            actionGroupId= action_group_id,
+            actionGroupName=action_group_name,
+            actionGroupExecutor={
+                'lambda': lambda_function['FunctionArn']
+            },
+            functionSchema={
+                'functions': agent_functions
+            },
+            actionGroupState='DISABLED',
+        )
+        bedrock_agent_client.disassociate_agent_knowledge_base(
+            agentId=agent_id,
+            agentVersion='DRAFT',
+            knowledgeBaseId=kb_id
+        )
+        bedrock_agent_client.delete_agent_action_group(
+            agentId=agent_id,
+            agentVersion='DRAFT',
+            actionGroupId=action_group_id
+        )
+        bedrock_agent_client.delete_agent_alias(
+            agentAliasId=alias_id,
+            agentId=agent_id
+        )
+        bedrock_agent_client.delete_agent(agentId=agent_id)
+        print(f"Agent {agent_id}, Agent Alias {alias_id}, and Action Group have been deleted.")
+    except Exception as e:
+        print(f"Error deleting Agent resources: {e}")
+
+    # Delete Lambda function
+    try:
+        lambda_client.delete_function(FunctionName=lambda_function_name)
+        print(f"Lambda function {lambda_function_name} has been deleted.")
+    except Exception as e:
+        print(f"Error deleting Lambda function {lambda_function_name}: {e}")
+
+    # Delete DynamoDB table
+    try:
+        dynamodb_client.delete_table(TableName=table_name)
+        print(f"Table {table_name} is being deleted...")
+        waiter = dynamodb_client.get_waiter('table_not_exists')
+        waiter.wait(TableName=table_name)
+        print(f"Table {table_name} has been deleted.")
+    except Exception as e:
+        print(f"Error deleting table {table_name}: {e}")
+
+```
+
+### knowledge_base.py
+
+```python
+# Copyright 2024 Amazon.com and its affiliates; all rights reserved.
+# This file is AWS Content and may not be duplicated or distributed without permission
+
+"""
+This module contains a helper class for building and using Knowledge Bases for Amazon Bedrock.
+The KnowledgeBasesForAmazonBedrock class provides a convenient interface for working with Knowledge Bases.
+It includes methods for creating, updating, and invoking Knowledge Bases, as well as managing
+IAM roles and OpenSearch Serverless. Here is a quick example of using
+the class:
+
+    >>> from knowledge_base import KnowledgeBasesForAmazonBedrock
+    >>> kb = KnowledgeBasesForAmazonBedrock()
+    >>> kb_name = "my-knowledge-base-test"
+    >>> kb_description = "my knowledge base description"
+    >>> data_bucket_name = "<s3_bucket_with_kb_dataset>"
+    >>> kb_id, ds_id = kb.create_or_retrieve_knowledge_base(kb_name, kb_description, data_bucket_name)
+    >>> kb.synchronize_data(kb_id, ds_id)
+
+Here is a summary of the most important methods:
+
+- create_or_retrieve_knowledge_base: Creates a new Knowledge Base or retrieves an existent one.
+- synchronize_data: Syncronize the Knowledge Base with the
+"""
+import json
+import boto3
+import time
+from botocore.exceptions import ClientError
+from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth, RequestError
+import pprint
+from retrying import retry
+import random
+
+valid_embedding_models = [
+    "cohere.embed-multilingual-v3", "cohere.embed-english-v3", "amazon.titan-embed-text-v1",
+    "amazon.titan-embed-text-v2:0"
+]
+pp = pprint.PrettyPrinter(indent=2)
+
+
+def interactive_sleep(seconds: int):
+    """
+    Support functionality to induce an artificial 'sleep' to the code in order to wait for resources to be available
+    Args:
+        seconds (int): number of seconds to sleep for
+    """
+    dots = ''
+    for i in range(seconds):
+        dots += '.'
+        print(dots, end='\r')
+        time.sleep(1)
+
+
+class KnowledgeBasesForAmazonBedrock:
+    """
+    Support class that allows for:
+        - creation (or retrieval) of a Knowledge Base for Amazon Bedrock with all its pre-requisites
+          (including OSS, IAM roles and Permissions and S3 bucket)
+        - Ingestion of data into the Knowledge Base
+        - Deletion of all resources created
+    """
+
+    def __init__(self, suffix=None):
+        """
+        Class initializer
+        """
+        boto3_session = boto3.session.Session()
+        self.region_name = boto3_session.region_name
+        self.iam_client = boto3_session.client('iam')
+        self.account_number = boto3.client('sts').get_caller_identity().get('Account')
+        self.suffix = random.randrange(200, 900)
+        self.identity = boto3.client('sts').get_caller_identity()['Arn']
+        self.aoss_client = boto3_session.client('opensearchserverless')
+        self.s3_client = boto3.client('s3')
+        self.bedrock_agent_client = boto3.client('bedrock-agent')
+        credentials = boto3.Session().get_credentials()
+        self.awsauth = AWSV4SignerAuth(credentials, self.region_name, 'aoss')
+        self.oss_client = None
+
+    def create_or_retrieve_knowledge_base(
+            self,
+            kb_name: str,
+            kb_description: str = None,
+            data_bucket_name: str = None,
+            embedding_model: str = "amazon.titan-embed-text-v2:0"
+    ):
+        """
+        Function used to create a new Knowledge Base or retrieve an existent one
+
+        Args:
+            kb_name: Knowledge Base Name
+            kb_description: Knowledge Base Description
+            data_bucket_name: Name of s3 Bucket containing Knowledge Base Data
+            embedding_model: Name of Embedding model to be used on Knowledge Base creation
+
+        Returns:
+            kb_id: str - Knowledge base id
+            ds_id: str - Data Source id
+        """
+        kb_id = None
+        ds_id = None
+        kbs_available = self.bedrock_agent_client.list_knowledge_bases(
+            maxResults=100,
+        )
+        for kb in kbs_available["knowledgeBaseSummaries"]:
+            if kb_name == kb["name"]:
+                kb_id = kb["knowledgeBaseId"]
+        if kb_id is not None:
+            ds_available = self.bedrock_agent_client.list_data_sources(
+                knowledgeBaseId=kb_id,
+                maxResults=100,
+            )
+            for ds in ds_available["dataSourceSummaries"]:
+                if kb_id == ds["knowledgeBaseId"]:
+                    ds_id = ds["dataSourceId"]
+            print(f"Knowledge Base {kb_name} already exists.")
+            print(f"Retrieved Knowledge Base Id: {kb_id}")
+            print(f"Retrieved Data Source Id: {ds_id}")
+        else:
+            print(f"Creating KB {kb_name}")
+            # self.kb_name = kb_name
+            # self.kb_description = kb_description
+            if data_bucket_name is None:
+                kb_name_temp = kb_name.replace("_", "-")
+                data_bucket_name = f"{kb_name_temp}-{self.suffix}"
+                print(f"KB bucket name not provided, creating a new one called: {data_bucket_name}")
+            if embedding_model not in valid_embedding_models:
+                valid_embeddings_str = str(valid_embedding_models)
+                raise ValueError(f"Invalid embedding model. Your embedding model should be one of {valid_embeddings_str}")
+            # self.embedding_model = embedding_model
+            encryption_policy_name = f"{kb_name}-sp-{self.suffix}"
+            network_policy_name = f"{kb_name}-np-{self.suffix}"
+            access_policy_name = f'{kb_name}-ap-{self.suffix}'
+            kb_execution_role_name = f'AmazonBedrockExecutionRoleForKnowledgeBase_{self.suffix}'
+            fm_policy_name = f'AmazonBedrockFoundationModelPolicyForKnowledgeBase_{self.suffix}'
+            s3_policy_name = f'AmazonBedrockS3PolicyForKnowledgeBase_{self.suffix}'
+            oss_policy_name = f'AmazonBedrockOSSPolicyForKnowledgeBase_{self.suffix}'
+            vector_store_name = f'{kb_name}-{self.suffix}'
+            index_name = f"{kb_name}-index-{self.suffix}"
+            print("========================================================================================")
+            print(f"Step 1 - Creating or retrieving {data_bucket_name} S3 bucket for Knowledge Base documents")
+            self.create_s3_bucket(data_bucket_name)
+            print("========================================================================================")
+            print(f"Step 2 - Creating Knowledge Base Execution Role ({kb_execution_role_name}) and Policies")
+            bedrock_kb_execution_role = self.create_bedrock_kb_execution_role(
+                embedding_model, data_bucket_name, fm_policy_name, s3_policy_name, kb_execution_role_name
+            )
+            print("========================================================================================")
+            print(f"Step 3 - Creating OSS encryption, network and data access policies")
+            encryption_policy, network_policy, access_policy = self.create_policies_in_oss(
+                encryption_policy_name, vector_store_name, network_policy_name,
+                bedrock_kb_execution_role, access_policy_name
+            )
+            print("========================================================================================")
+            print(f"Step 4 - Creating OSS Collection (this step takes a couple of minutes to complete)")
+            host, collection, collection_id, collection_arn = self.create_oss(
+                vector_store_name, oss_policy_name, bedrock_kb_execution_role
+            )
+            # Build the OpenSearch client
+            self.oss_client = OpenSearch(
+                hosts=[{'host': host, 'port': 443}],
+                http_auth=self.awsauth,
+                use_ssl=True,
+                verify_certs=True,
+                connection_class=RequestsHttpConnection,
+                timeout=300
+            )
+
+            print("========================================================================================")
+            print(f"Step 5 - Creating OSS Vector Index")
+            self.create_vector_index(index_name)
+            print("========================================================================================")
+            print(f"Step 6 - Creating Knowledge Base")
+            knowledge_base, data_source = self.create_knowledge_base(
+                collection_arn, index_name, data_bucket_name, embedding_model,
+                kb_name, kb_description, bedrock_kb_execution_role
+            )
+            interactive_sleep(60)
+            print("========================================================================================")
+            kb_id = knowledge_base['knowledgeBaseId']
+            ds_id = data_source["dataSourceId"]
+        return kb_id, ds_id
+
+    def create_s3_bucket(self, bucket_name: str):
+        """
+        Check if bucket exists, and if not create S3 bucket for knowledge base data source
+        Args:
+            bucket_name: s3 bucket name
+        """
+        try:
+            self.s3_client.head_bucket(Bucket=bucket_name)
+            print(f'Bucket {bucket_name} already exists - retrieving it!')
+        except ClientError as e:
+            print(f'Creating bucket {bucket_name}')
+            if self.region_name == "us-east-1":
+                self.s3_client.create_bucket(
+                    Bucket=bucket_name
+                )
+            else:
+                self.s3_client.create_bucket(
+                    Bucket=bucket_name,
+                    CreateBucketConfiguration={'LocationConstraint': self.region_name}
+                )
+
+    def create_bedrock_kb_execution_role(
+            self,
+            embedding_model: str,
+            bucket_name: str,
+            fm_policy_name: str,
+            s3_policy_name: str,
+            kb_execution_role_name: str
+    ):
+        """
+        Create Knowledge Base Execution IAM Role and its required policies.
+        If role and/or policies already exist, retrieve them
+        Args:
+            embedding_model: the embedding model used by the knowledge base
+            bucket_name: the bucket name used by the knowledge base
+            fm_policy_name: the name of the foundation model access policy
+            s3_policy_name: the name of the s3 access policy
+            kb_execution_role_name: the name of the knowledge base execution role
+
+        Returns:
+            IAM role created
+        """
+        foundation_model_policy_document = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "bedrock:InvokeModel",
+                    ],
+                    "Resource": [
+                        f"arn:aws:bedrock:{self.region_name}::foundation-model/{embedding_model}"
+                    ]
+                }
+            ]
+        }
+
+        s3_policy_document = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "s3:GetObject",
+                        "s3:ListBucket"
+                    ],
+                    "Resource": [
+                        f"arn:aws:s3:::{bucket_name}",
+                        f"arn:aws:s3:::{bucket_name}/*"
+                    ],
+                    "Condition": {
+                        "StringEquals": {
+                            "aws:ResourceAccount": f"{self.account_number}"
+                        }
+                    }
+                }
+            ]
+        }
+
+        assume_role_policy_document = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": "bedrock.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+        try:
+            # create policies based on the policy documents
+            fm_policy = self.iam_client.create_policy(
+                PolicyName=fm_policy_name,
+                PolicyDocument=json.dumps(foundation_model_policy_document),
+                Description='Policy for accessing foundation model',
+            )
+        except self.iam_client.exceptions.EntityAlreadyExistsException:
+            print(f"{fm_policy_name} already exists, retrieving it!")
+            fm_policy = self.iam_client.get_policy(
+                PolicyArn=f"arn:aws:iam::{self.account_number}:policy/{fm_policy_name}"
+            )
+
+        try:
+            s3_policy = self.iam_client.create_policy(
+                PolicyName=s3_policy_name,
+                PolicyDocument=json.dumps(s3_policy_document),
+                Description='Policy for reading documents from s3')
+        except self.iam_client.exceptions.EntityAlreadyExistsException:
+            print(f"{s3_policy_name} already exists, retrieving it!")
+            s3_policy = self.iam_client.get_policy(
+                PolicyArn=f"arn:aws:iam::{self.account_number}:policy/{s3_policy_name}"
+            )
+        # create bedrock execution role
+        try:
+            bedrock_kb_execution_role = self.iam_client.create_role(
+                RoleName=kb_execution_role_name,
+                AssumeRolePolicyDocument=json.dumps(assume_role_policy_document),
+                Description='Amazon Bedrock Knowledge Base Execution Role for accessing OSS and S3',
+                MaxSessionDuration=3600
+            )
+        except self.iam_client.exceptions.EntityAlreadyExistsException:
+            print(f"{kb_execution_role_name} already exists, retrieving it!")
+            bedrock_kb_execution_role = self.iam_client.get_role(
+                RoleName=kb_execution_role_name
+            )
+        # fetch arn of the policies and role created above
+        s3_policy_arn = s3_policy["Policy"]["Arn"]
+        fm_policy_arn = fm_policy["Policy"]["Arn"]
+
+        # attach policies to Amazon Bedrock execution role
+        self.iam_client.attach_role_policy(
+            RoleName=bedrock_kb_execution_role["Role"]["RoleName"],
+            PolicyArn=fm_policy_arn
+        )
+        self.iam_client.attach_role_policy(
+            RoleName=bedrock_kb_execution_role["Role"]["RoleName"],
+            PolicyArn=s3_policy_arn
+        )
+        return bedrock_kb_execution_role
+
+    def create_oss_policy_attach_bedrock_execution_role(
+            self,
+            collection_id: str, oss_policy_name: str,
+            bedrock_kb_execution_role: str
+    ):
+        """
+        Create OpenSearch Serverless policy and attach it to the Knowledge Base Execution role.
+        If policy already exists, attaches it
+        Args:
+            collection_id: collection id
+            oss_policy_name: opensearch serverless policy name
+            bedrock_kb_execution_role: knowledge base execution role
+
+        Returns:
+            created: bool - boolean to indicate if role was created
+        """
+        # define oss policy document
+        oss_policy_document = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "aoss:APIAccessAll"
+                    ],
+                    "Resource": [
+                        f"arn:aws:aoss:{self.region_name}:{self.account_number}:collection/{collection_id}"
+                    ]
+                }
+            ]
+        }
+
+        oss_policy_arn = f"arn:aws:iam::{self.account_number}:policy/{oss_policy_name}"
+        created = False
+        try:
+            self.iam_client.create_policy(
+                PolicyName=oss_policy_name,
+                PolicyDocument=json.dumps(oss_policy_document),
+                Description='Policy for accessing opensearch serverless',
+            )
+            created = True
+        except self.iam_client.exceptions.EntityAlreadyExistsException:
+            print(f"Policy {oss_policy_arn} already exists, updating it")
+        print("Opensearch serverless arn: ", oss_policy_arn)
+
+        self.iam_client.attach_role_policy(
+            RoleName=bedrock_kb_execution_role["Role"]["RoleName"],
+            PolicyArn=oss_policy_arn
+        )
+        return created
+
+    def create_policies_in_oss(
+            self, encryption_policy_name: str, vector_store_name: str, network_policy_name: str,
+            bedrock_kb_execution_role: str, access_policy_name: str
+    ):
+        """
+        Create OpenSearch Serverless encryption, network and data access policies.
+        If policies already exist, retrieve them
+        Args:
+            encryption_policy_name: name of the data encryption policy
+            vector_store_name: name of the vector store
+            network_policy_name: name of the network policy
+            bedrock_kb_execution_role: name of the knowledge base execution role
+            access_policy_name: name of the data access policy
+
+        Returns:
+            encryption_policy, network_policy, access_policy
+        """
+        try:
+            encryption_policy = self.aoss_client.create_security_policy(
+                name=encryption_policy_name,
+                policy=json.dumps(
+                    {
+                        'Rules': [{'Resource': ['collection/' + vector_store_name],
+                                   'ResourceType': 'collection'}],
+                        'AWSOwnedKey': True
+                    }),
+                type='encryption'
+            )
+        except self.aoss_client.exceptions.ConflictException:
+            print(f"{encryption_policy_name} already exists, retrieving it!")
+            encryption_policy = self.aoss_client.get_security_policy(
+                name=encryption_policy_name,
+                type='encryption'
+            )
+
+        try:
+            network_policy = self.aoss_client.create_security_policy(
+                name=network_policy_name,
+                policy=json.dumps(
+                    [
+                        {'Rules': [{'Resource': ['collection/' + vector_store_name],
+                                    'ResourceType': 'collection'}],
+                         'AllowFromPublic': True}
+                    ]),
+                type='network'
+            )
+        except self.aoss_client.exceptions.ConflictException:
+            print(f"{network_policy_name} already exists, retrieving it!")
+            network_policy = self.aoss_client.get_security_policy(
+                name=network_policy_name,
+                type='network'
+            )
+
+        try:
+            access_policy = self.aoss_client.create_access_policy(
+                name=access_policy_name,
+                policy=json.dumps(
+                    [
+                        {
+                            'Rules': [
+                                {
+                                    'Resource': ['collection/' + vector_store_name],
+                                    'Permission': [
+                                        'aoss:CreateCollectionItems',
+                                        'aoss:DeleteCollectionItems',
+                                        'aoss:UpdateCollectionItems',
+                                        'aoss:DescribeCollectionItems'],
+                                    'ResourceType': 'collection'
+                                },
+                                {
+                                    'Resource': ['index/' + vector_store_name + '/*'],
+                                    'Permission': [
+                                        'aoss:CreateIndex',
+                                        'aoss:DeleteIndex',
+                                        'aoss:UpdateIndex',
+                                        'aoss:DescribeIndex',
+                                        'aoss:ReadDocument',
+                                        'aoss:WriteDocument'],
+                                    'ResourceType': 'index'
+                                }],
+                            'Principal': [self.identity, bedrock_kb_execution_role['Role']['Arn']],
+                            'Description': 'Easy data policy'}
+                    ]),
+                type='data'
+            )
+        except self.aoss_client.exceptions.ConflictException:
+            print(f"{access_policy_name} already exists, retrieving it!")
+            access_policy = self.aoss_client.get_access_policy(
+                name=access_policy_name,
+                type='data'
+            )
+        return encryption_policy, network_policy, access_policy
+
+    def create_oss(self, vector_store_name: str, oss_policy_name: str, bedrock_kb_execution_role: str):
+        """
+        Create OpenSearch Serverless Collection. If already existent, retrieve
+        Args:
+            vector_store_name: name of the vector store
+            oss_policy_name: name of the opensearch serverless access policy
+            bedrock_kb_execution_role: name of the knowledge base execution role
+        """
+        try:
+            collection = self.aoss_client.create_collection(
+                name=vector_store_name, type='VECTORSEARCH'
+            )
+            collection_id = collection['createCollectionDetail']['id']
+            collection_arn = collection['createCollectionDetail']['arn']
+        except self.aoss_client.exceptions.ConflictException:
+            collection = self.aoss_client.batch_get_collection(
+                names=[vector_store_name]
+            )['collectionDetails'][0]
+            pp.pprint(collection)
+            collection_id = collection['id']
+            collection_arn = collection['arn']
+        pp.pprint(collection)
+
+        # Get the OpenSearch serverless collection URL
+        host = collection_id + '.' + self.region_name + '.aoss.amazonaws.com'
+        print(host)
+        # wait for collection creation
+        # This can take couple of minutes to finish
+        response = self.aoss_client.batch_get_collection(names=[vector_store_name])
+        # Periodically check collection status
+        while (response['collectionDetails'][0]['status']) == 'CREATING':
+            print('Creating collection...')
+            interactive_sleep(30)
+            response = self.aoss_client.batch_get_collection(names=[vector_store_name])
+        print('\nCollection successfully created:')
+        pp.pprint(response["collectionDetails"])
+        # create opensearch serverless access policy and attach it to Bedrock execution role
+        try:
+            created = self.create_oss_policy_attach_bedrock_execution_role(
+                collection_id, oss_policy_name, bedrock_kb_execution_role
+            )
+            if created:
+                # It can take up to a minute for data access rules to be enforced
+                print("Sleeping for a minute to ensure data access rules have been enforced")
+                interactive_sleep(60)
+            return host, collection, collection_id, collection_arn
+        except Exception as e:
+            print("Policy already exists")
+            pp.pprint(e)
+
+    def create_vector_index(self, index_name: str):
+        """
+        Create OpenSearch Serverless vector index. If existent, ignore
+        Args:
+            index_name: name of the vector index
+        """
+        body_json = {
+            "settings": {
+                "index.knn": "true",
+                "number_of_shards": 1,
+                "knn.algo_param.ef_search": 512,
+                "number_of_replicas": 0,
+            },
+            "mappings": {
+                "properties": {
+                    "vector": {
+                        "type": "knn_vector",
+                        "dimension": 1024,
+                        "method": {
+                            "name": "hnsw",
+                            "engine": "faiss",
+                            "space_type": "l2"
+                        },
+                    },
+                    "text": {
+                        "type": "text"
+                    },
+                    "text-metadata": {
+                        "type": "text"}
+                }
+            }
+        }
+
+        # Create index
+        try:
+            response = self.oss_client.indices.create(index=index_name, body=json.dumps(body_json))
+            print('\nCreating index:')
+            pp.pprint(response)
+
+            # index creation can take up to a minute
+            interactive_sleep(60)
+        except RequestError as e:
+            # you can delete the index if its already exists
+            # oss_client.indices.delete(index=index_name)
+            print(
+                f'Error while trying to create the index, with error {e.error}\nyou may unmark the delete above to '
+                f'delete, and recreate the index')
+
+    @retry(wait_random_min=1000, wait_random_max=2000, stop_max_attempt_number=7)
+    def create_knowledge_base(
+            self, collection_arn: str, index_name: str, bucket_name: str, embedding_model: str,
+            kb_name: str, kb_description: str, bedrock_kb_execution_role: str
+    ):
+        """
+        Create Knowledge Base and its Data Source. If existent, retrieve
+        Args:
+            collection_arn: ARN of the opensearch serverless collection
+            index_name: name of the opensearch serverless index
+            bucket_name: name of the s3 bucket containing the knowledge base data
+            embedding_model: id of the embedding model used
+            kb_name: knowledge base name
+            kb_description: knowledge base description
+            bedrock_kb_execution_role: knowledge base execution role
+
+        Returns:
+            knowledge base object,
+            data source object
+        """
+        opensearch_serverless_configuration = {
+            "collectionArn": collection_arn,
+            "vectorIndexName": index_name,
+            "fieldMapping": {
+                "vectorField": "vector",
+                "textField": "text",
+                "metadataField": "text-metadata"
+            }
+        }
+
+        # Ingest strategy - How to ingest data from the data source
+        chunking_strategy_configuration = {
+            "chunkingStrategy": "FIXED_SIZE",
+            "fixedSizeChunkingConfiguration": {
+                "maxTokens": 512,
+                "overlapPercentage": 20
+            }
+        }
+
+        # The data source to ingest documents from, into the OpenSearch serverless knowledge base index
+        s3_configuration = {
+            "bucketArn": f"arn:aws:s3:::{bucket_name}",
+            # "inclusionPrefixes":["*.*"] # you can use this if you want to create a KB using data within s3 prefixes.
+        }
+
+        # The embedding model used by Bedrock to embed ingested documents, and realtime prompts
+        embedding_model_arn = f"arn:aws:bedrock:{self.region_name}::foundation-model/{embedding_model}"
+        print(str({
+            "type": "VECTOR",
+            "vectorKnowledgeBaseConfiguration": {
+                "embeddingModelArn": embedding_model_arn
+            }
+        }))
+        try:
+            create_kb_response = self.bedrock_agent_client.create_knowledge_base(
+                name=kb_name,
+                description=kb_description,
+                roleArn=bedrock_kb_execution_role['Role']['Arn'],
+                knowledgeBaseConfiguration={
+                    "type": "VECTOR",
+                    "vectorKnowledgeBaseConfiguration": {
+                        "embeddingModelArn": embedding_model_arn
+                    }
+                },
+                storageConfiguration={
+                    "type": "OPENSEARCH_SERVERLESS",
+                    "opensearchServerlessConfiguration": opensearch_serverless_configuration
+                }
+            )
+            kb = create_kb_response["knowledgeBase"]
+            pp.pprint(kb)
+        except self.bedrock_agent_client.exceptions.ConflictException:
+            kbs = self.bedrock_agent_client.list_knowledge_bases(
+                maxResults=100
+            )
+            kb_id = None
+            for kb in kbs['knowledgeBaseSummaries']:
+                if kb['name'] == kb_name:
+                    kb_id = kb['knowledgeBaseId']
+            response = self.bedrock_agent_client.get_knowledge_base(knowledgeBaseId=kb_id)
+            kb = response['knowledgeBase']
+            pp.pprint(kb)
+
+        # Create a DataSource in KnowledgeBase
+        try:
+            create_ds_response = self.bedrock_agent_client.create_data_source(
+                name=kb_name,
+                description=kb_description,
+                knowledgeBaseId=kb['knowledgeBaseId'],
+                dataDeletionPolicy='RETAIN',
+                dataSourceConfiguration={
+                    "type": "S3",
+                    "s3Configuration": s3_configuration
+                },
+                vectorIngestionConfiguration={
+                    "chunkingConfiguration": chunking_strategy_configuration
+                }
+            )
+            ds = create_ds_response["dataSource"]
+            pp.pprint(ds)
+        except self.bedrock_agent_client.exceptions.ConflictException:
+            ds_id = self.bedrock_agent_client.list_data_sources(
+                knowledgeBaseId=kb['knowledgeBaseId'],
+                maxResults=100
+            )['dataSourceSummaries'][0]['dataSourceId']
+            get_ds_response = self.bedrock_agent_client.get_data_source(
+                dataSourceId=ds_id,
+                knowledgeBaseId=kb['knowledgeBaseId']
+            )
+            ds = get_ds_response["dataSource"]
+            pp.pprint(ds)
+        return kb, ds
+
+    def synchronize_data(self, kb_id, ds_id):
+        """
+        Start an ingestion job to synchronize data from an S3 bucket to the Knowledge Base
+        and waits for the job to be completed
+        Args:
+            kb_id: knowledge base id
+            ds_id: data source id
+        """
+        # Start an ingestion job
+        start_job_response = self.bedrock_agent_client.start_ingestion_job(
+            knowledgeBaseId=kb_id,
+            dataSourceId=ds_id
+        )
+        job = start_job_response["ingestionJob"]
+        pp.pprint(job)
+        # Get job
+        while job['status'] != 'COMPLETE':
+            get_job_response = self.bedrock_agent_client.get_ingestion_job(
+                knowledgeBaseId=kb_id,
+                dataSourceId=ds_id,
+                ingestionJobId=job["ingestionJobId"]
+            )
+            job = get_job_response["ingestionJob"]
+        pp.pprint(job)
+        interactive_sleep(40)
+
+    def delete_kb(self, kb_name: str, delete_s3_bucket: bool = True, delete_iam_roles_and_policies: bool = True,
+                  delete_aoss: bool = True):
+        """
+        Delete the Knowledge Base resources
+        Args:
+            kb_name: name of the knowledge base to delete
+            delete_s3_bucket (bool): boolean to indicate if s3 bucket should also be deleted
+            delete_iam_roles_and_policies (bool): boolean to indicate if IAM roles and Policies should also be deleted
+            delete_aoss: boolean to indicate if amazon opensearch serverless resources should also be deleted
+        """
+        kbs_available = self.bedrock_agent_client.list_knowledge_bases(
+            maxResults=100,
+        )
+        kb_id = None
+        ds_id = None
+        for kb in kbs_available["knowledgeBaseSummaries"]:
+            if kb_name == kb["name"]:
+                kb_id = kb["knowledgeBaseId"]
+        kb_details = self.bedrock_agent_client.get_knowledge_base(
+            knowledgeBaseId=kb_id
+        )
+        kb_role = kb_details['knowledgeBase']['roleArn'].split("/")[1]
+        collection_id = kb_details['knowledgeBase']['storageConfiguration']['opensearchServerlessConfiguration']['collectionArn'].split(
+            '/')[1]
+        index_name = kb_details['knowledgeBase']['storageConfiguration']['opensearchServerlessConfiguration'][
+            'vectorIndexName']
+
+        encryption_policies = self.aoss_client.list_security_policies(
+            maxResults=100,
+            type='encryption'
+        )
+        encryption_policy_name = None
+        for ep in encryption_policies['securityPolicySummaries']:
+            if ep['name'].startswith(kb_name):
+                encryption_policy_name = ep['name']
+
+        network_policies = self.aoss_client.list_security_policies(
+            maxResults=100,
+            type='network'
+        )
+        network_policy_name = None
+        for np in network_policies['securityPolicySummaries']:
+            if np['name'].startswith(kb_name):
+                network_policy_name = np['name']
+
+        data_policies = self.aoss_client.list_access_policies(
+            maxResults=100,
+            type='data'
+        )
+        access_policy_name = None
+        for dp in data_policies['accessPolicySummaries']:
+            if dp['name'].startswith(kb_name):
+                access_policy_name = dp['name']
+
+        ds_available = self.bedrock_agent_client.list_data_sources(
+            knowledgeBaseId=kb_id,
+            maxResults=100,
+        )
+        for ds in ds_available["dataSourceSummaries"]:
+            if kb_id == ds["knowledgeBaseId"]:
+                ds_id = ds["dataSourceId"]
+        ds_details = self.bedrock_agent_client.get_data_source(
+            dataSourceId=ds_id,
+            knowledgeBaseId=kb_id,
+        )
+        bucket_name = ds_details['dataSource']['dataSourceConfiguration']['s3Configuration']['bucketArn'].replace(
+            "arn:aws:s3:::", "")
+        try:
+            self.bedrock_agent_client.delete_data_source(
+                dataSourceId=ds_id,
+                knowledgeBaseId=kb_id
+            )
+            print("Data Source deleted successfully!")
+        except Exception as e:
+            print(e)
+        try:
+            self.bedrock_agent_client.delete_knowledge_base(
+                knowledgeBaseId=kb_id
+            )
+            print("Knowledge Base deleted successfully!")
+        except Exception as e:
+            print(e)
+        if delete_aoss:
+            try:
+                self.oss_client.indices.delete(index=index_name)
+                print("OpenSource Serveless Index deleted successfully!")
+            except Exception as e:
+                print(e)
+            try:
+                self.aoss_client.delete_collection(id=collection_id)
+                print("OpenSource Collection Index deleted successfully!")
+            except Exception as e:
+                print(e)
+            try:
+                self.aoss_client.delete_access_policy(
+                    type="data",
+                    name=access_policy_name
+                )
+                print("OpenSource Serveless access policy deleted successfully!")
+            except Exception as e:
+                print(e)
+            try:
+                self.aoss_client.delete_security_policy(
+                    type="network",
+                    name=network_policy_name
+                )
+                print("OpenSource Serveless network policy deleted successfully!")
+            except Exception as e:
+                print(e)
+            try:
+                self.aoss_client.delete_security_policy(
+                    type="encryption",
+                    name=encryption_policy_name
+                )
+                print("OpenSource Serveless encryption policy deleted successfully!")
+            except Exception as e:
+                print(e)
+        if delete_s3_bucket:
+            try:
+                self.delete_s3(bucket_name)
+                print("Knowledge Base S3 bucket deleted successfully!")
+            except Exception as e:
+                print(e)
+        if delete_iam_roles_and_policies:
+            try:
+                self.delete_iam_roles_and_policies(kb_role)
+                print("Knowledge Base Roles and Policies deleted successfully!")
+            except Exception as e:
+                print(e)
+        print("Resources deleted successfully!")
+
+    def delete_iam_roles_and_policies(self, kb_execution_role_name: str):
+        """
+        Delete IAM Roles and policies used by the Knowledge Base
+        Args:
+            kb_execution_role_name: knowledge base execution role
+        """
+        attached_policies = self.iam_client.list_attached_role_policies(
+            RoleName=kb_execution_role_name,
+            MaxItems=100
+        )
+        policies_arns = []
+        for policy in attached_policies['AttachedPolicies']:
+            policies_arns.append(policy['PolicyArn'])
+        for policy in policies_arns:
+            self.iam_client.detach_role_policy(
+                RoleName=kb_execution_role_name,
+                PolicyArn=policy
+            )
+            self.iam_client.delete_policy(PolicyArn=policy)
+        self.iam_client.delete_role(RoleName=kb_execution_role_name)
+        return 0
+
+    def delete_s3(self, bucket_name: str):
+        """
+        Delete the objects contained in the Knowledge Base S3 bucket.
+        Once the bucket is empty, delete the bucket
+        Args:
+            bucket_name: bucket name
+
+        """
+        objects = self.s3_client.list_objects(Bucket=bucket_name)
+        if 'Contents' in objects:
+            for obj in objects['Contents']:
+                self.s3_client.delete_object(Bucket=bucket_name, Key=obj['Key'])
+        self.s3_client.delete_bucket(Bucket=bucket_name)
+```
+
+
+
+# END OF PROMPT

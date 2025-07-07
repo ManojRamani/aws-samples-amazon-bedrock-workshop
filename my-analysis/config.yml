@@ -1,0 +1,70 @@
+# Configuration for generate_summaries.py
+
+# Amazon Bedrock configuration
+model:
+  id: "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
+  name: "Claude 3.7 Sonnet"
+  provider: "Anthropic"
+
+# Inference configuration
+inference_config:
+  temperature: 0.2
+  max_tokens: 6000
+
+# List of folders to analyze
+folders_to_analyze:
+  - "01_Text_generation"
+  - "02_Knowledge_Bases_and_RAG"
+  - "03_Model_customization"
+  - "04_Image_and_Multimodal"
+  - "05_Agents"
+  - "06_OpenSource_examples"
+  - "07_Cross_Region_Inference"
+
+# Output configuration
+output:
+  directory: "my-analysis"
+  file_prefix: "SUMMARY-"
+
+# Debug configuration
+debug:
+  enabled: true  # Set to true to enable debug output
+  print_prompt: true  # Print the full prompt sent to the model
+
+# File selection configuration
+file_selection:
+  max_notebooks: 150        # Increased from 50 to 150 (3x)
+  max_notebook_cells: 300   # Increased from 100 to 300 (3x)
+  max_python_files: 300     # Increased from 100 to 300 (3x)
+  max_python_lines: 3000    # Increased from 1000 to 3000 (3x)
+  max_markdown_files: 150   # Increased from 50 to 150 (3x)
+  include_patterns:         # Always include files matching these patterns
+    - "main.py"
+    - "*config*.py"
+    - "README*"
+    - "utils.py"
+    - "*agent*.py"
+    - "*model*.py"
+    - "*data*.py"
+    - "*util*.py"
+    - "*helper*.py"
+    - "*service*.py"
+    - "*client*.py"
+    - "*api*.py"
+    - "requirements.txt"
+  exclude_patterns:         # Skip files/directories matching these patterns
+    - "__pycache__"
+    - "*.pyc"
+    - "venv/*"
+    - "*.log"
+    - "*.tmp"
+    - "*.png"
+    - "*.jpg"
+    - "*.JPG"
+    - "*.jpeg"
+    - "*.JPEG"
+    - "*.gif"
+    - "*.ico"
+    - "*.svg"
+    - "node_modules/*"
+    - ".git/*"
