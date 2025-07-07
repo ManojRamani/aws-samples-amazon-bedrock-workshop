@@ -143,19 +143,19 @@ logs_client.put_metric_filter(
 ## Technical Architecture Overview
 
 ```mermaid
-    flowchart TD
-        A[Client Application] --> B[Amazon Bedrock API]
-        B --> C{Inference Profile}
-        C -->|Route Request| D[Source Region]
-        C -->|Failover/Load Balance| E[Fulfillment Region 1]
-        C -->|Failover/Load Balance| F[Fulfillment Region 2]
-        D --> G[Foundation Model]
-        E --> H[Foundation Model]
-        F --> I[Foundation Model]
-        J[CloudWatch Logs] <-- Model Invocation Logs --- D
-        J <-- Model Invocation Logs --- E
-        J <-- Model Invocation Logs --- F
-        J --> K[CloudWatch Metrics]
+flowchart TD
+    A[Client Application] --> B[Amazon Bedrock API]
+    B --> C{Inference Profile}
+    C -->|Route Request| D[Source Region]
+    C -->|Failover/Load Balance| E[Fulfillment Region 1]
+    C -->|Failover/Load Balance| F[Fulfillment Region 2]
+    D --> G[Foundation Model]
+    E --> H[Foundation Model]
+    F --> I[Foundation Model]
+    D -->|Model Invocation Logs| J[CloudWatch Logs]
+    E -->|Model Invocation Logs| J
+    F -->|Model Invocation Logs| J
+    J --> K[CloudWatch Metrics]
 ```
 
 ### Request/Response Flow for Cross-Region Inference

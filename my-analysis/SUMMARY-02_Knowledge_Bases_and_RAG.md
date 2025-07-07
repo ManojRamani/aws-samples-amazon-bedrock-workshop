@@ -108,7 +108,6 @@ response = bedrock_client.converse(
     inferenceConfig=converse_request["inferenceConfig"]
 )
 ```
-
 ### 4. Resource Cleanup
 
 The final notebook (`4_clean-up.ipynb`) provides instructions for removing all created resources:
@@ -140,6 +139,131 @@ The final notebook (`4_clean-up.ipynb`) provides instructions for removing all c
 5. **Chunking Strategy**:
    - Documents are automatically chunked during ingestion based on configured parameters.
    - The chunking strategy affects retrieval quality and context window utilization.
+
+## So why just **`retrieve`**  instead of **`retrieveAndGenerate`** ?
+
+### TL;DR
+
+1. Custom processing pipeline - you want to do your own processing of the retrieved documents
+2. Cost optimization - avoid LLM inference costs when you don't need generation
+3. Transparency/auditability - you want to see exactly what documents were retrieved before any generation
+4. Integration with existing systems that expect raw document data
+5. Multi-step workflows where retrieval is just one step
+6. Quality control - manual review of retrieved content before generation
+7. Custom prompt engineering - you want to craft your own prompts with the retrieved content
+8. Performance - when you only need the retrieval step and generation would add unnecessary latency
+9. Compliance/regulatory requirements where you need to show source documents
+10. A/B testing different generation approaches with the same retrieved content
+
+
+Here are several scenarios where a customer might prefer the **`retrieve`** API over **`retrieveAndGenerate`**:
+
+## **1. Custom Processing Pipeline**
+**Scenario:** A legal firm wants to implement their own document analysis workflow.
+
+```python
+# They retrieve relevant legal documents
+response = bedrock_agent.retrieve(
+    knowledgeBaseId='legal-kb-123',
+    retrievalQuery='patent infringement cases 2023'
+)
+
+# Then apply custom logic:
+# - Extract specific legal citations
+# - Apply proprietary scoring algorithms  
+# - Format for their case management system
+# - Route to appropriate legal experts
+```
+
+## **2. Cost Optimization Strategy**
+**Scenario:** A customer service system that wants to minimize LLM inference costs.
+
+```python
+# First, check if retrieved documents contain exact answers
+retrieved_docs = bedrock_agent.retrieve(
+    knowledgeBaseId='support-kb',
+    retrievalQuery=user_question
+)
+
+# Only call retrieveAndGenerate if documents need synthesis
+if needs_complex_reasoning(retrieved_docs):
+    # Use the more expensive retrieveAndGenerate
+    response = bedrock_agent.retrieve_and_generate(...)
+else:
+    # Return direct answer from FAQ documents
+    return format_direct_answer(retrieved_docs)
+```
+
+## **3. Human-in-the-Loop Workflows**
+**Scenario:** Medical research where human experts must review source materials before any AI-generated summaries.
+
+```python
+# Retrieve relevant medical papers
+papers = bedrock_agent.retrieve(
+    knowledgeBaseId='medical-research-kb',
+    retrievalQuery='immunotherapy side effects'
+)
+
+# Present to medical expert for review
+expert_approved_docs = await human_review(papers)
+
+# Only then generate summary with approved sources
+if expert_approved_docs:
+    summary = custom_generate_with_sources(expert_approved_docs)
+```
+
+## **4. Multi-Modal or Specialized Output Requirements**
+**Scenario:** An e-commerce platform that needs to combine retrieved product information with dynamic pricing, inventory, and personalization.
+
+```python
+# Retrieve product documentation
+product_info = bedrock_agent.retrieve(
+    knowledgeBaseId='product-catalog',
+    retrievalQuery=f'specifications for {product_name}'
+)
+
+# Combine with real-time data
+enriched_response = {
+    'product_details': product_info,
+    'current_price': get_dynamic_pricing(product_id),
+    'inventory_status': check_inventory(product_id),
+    'personalized_recommendations': get_user_recommendations(user_id),
+    'visual_assets': generate_product_images(product_specs)
+}
+```
+
+## **5. Compliance and Auditability**
+**Scenario:** Financial services where regulatory requirements mandate showing exact source documents for any AI-generated advice.
+
+```python
+# Retrieve relevant financial regulations
+source_docs = bedrock_agent.retrieve(
+    knowledgeBaseId='financial-regulations',
+    retrievalQuery='mortgage lending requirements'
+)
+
+# Log exact sources for audit trail
+audit_log = {
+    'query': user_query,
+    'retrieved_sources': [doc['metadata'] for doc in source_docs],
+    'retrieval_timestamp': datetime.now(),
+    'user_id': current_user.id
+}
+
+# Generate response separately with full traceability
+response = generate_compliant_response(source_docs, audit_log)
+```
+
+## **Key Benefits of Using `retrieve` Only:**
+- **Cost Control:** Avoid LLM inference costs when not needed
+- **Flexibility:** Apply custom business logic to retrieved content  
+- **Transparency:** Full visibility into source documents
+- **Performance:** Lower latency when generation isn't required
+- **Integration:** Easier to integrate with existing non-AI systems
+- **Quality Control:** Human review before AI generation
+- **Compliance:** Meet regulatory requirements for source attribution
+
+The `retrieve` API gives you the building blocks, while `retrieveAndGenerate` is the complete solution. Choose based on whether you need the flexibility to customize the generation step.
 
 ## Technical Architecture Overview
 
